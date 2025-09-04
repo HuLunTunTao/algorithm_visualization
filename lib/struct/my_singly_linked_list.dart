@@ -1,10 +1,12 @@
 class MySinglyLinkedList<T> {
   _Node<T>? _head;
   _Node<T>? _tail;
-  int length=0;
+  int _length=0;
+
+  int get length=>_length;
 
   bool isEmpty(){
-    return length==0;
+    return _length==0;
   }
 
   T? getTail()=>_tail?.data;
@@ -21,7 +23,7 @@ class MySinglyLinkedList<T> {
       newNode.next=_head;
       _head=newNode;
     }
-    length++;
+    _length++;
   }
 
   void insertTail(T data){
@@ -33,20 +35,21 @@ class MySinglyLinkedList<T> {
       _tail!.next=newNode;
       _tail=newNode;
     }
-    length++;
+    _length++;
   }
 
   void removeHead(){
     if(_head==null) return;
     _head=_head?.next as _Node<T>?;
-    length--;
+    _length--;
   }
 
   void removeTail(){
     if(_head==null) return;
     if(_head==_tail){
       _head=_tail=null;
-      length--;
+      _length--;
+      return;
     }
     _Node<T>? newTail=_head;
     while(newTail?.next!=_tail){
@@ -54,7 +57,13 @@ class MySinglyLinkedList<T> {
     }
     _tail=newTail;
     _tail!.next=null;
-    length--;
+    _length--;
+  }
+
+  void clear()
+  {
+    _head=_tail=null;
+    _length=0;
   }
 
   void printAll(){
