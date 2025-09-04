@@ -11,20 +11,39 @@ void main(){
     list.insertHead(random.nextInt(100));
   }
   list.printAll();
+  print("链表长度：${list.length}");
 
   int numToInsert=random.nextInt(100);
   print("在头部插入数字$numToInsert");
   list.insertHead(numToInsert);
   list.printAll();
+  print("链表长度：${list.length}");
 
   numToInsert=random.nextInt(100);
   print("在尾部插入数字$numToInsert");
   list.insertTail(numToInsert);
   list.printAll();
+  print("链表长度：${list.length}");
 
   print("获得头");
   print(list.getHead());
 
   print("获得尾");
   print(list.getTail());
+
+  print("删去头两个");
+  list.removeHead();
+  list.printAll();
+  list.removeHead();
+  list.printAll();
+  print("链表长度：${list.length}");
+
+  print("删去尾两个");
+  list.removeTail();
+  list.printAll();
+  list.removeTail();
+  list.printAll();
+  print("链表长度：${list.length}");
+
+
 }
