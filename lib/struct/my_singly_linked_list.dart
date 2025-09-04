@@ -7,13 +7,18 @@ class MySinglyLinkedList<T> {
     return length==0;
   }
 
+  T? getTail()=>_tail?.data;
+
+  T? getHead()=>_head?.data;
+
+
   void insertHead(T data){
     final newNode=_Node(data);
     if(_head==null){
       _head=newNode;
       _tail=newNode;
     }else{
-      _head?.prev=newNode;
+      newNode.next=_head;
       _head=newNode;
     }
     length++;
@@ -21,11 +26,11 @@ class MySinglyLinkedList<T> {
 
   void insertTail(T data){
     final newNode=_Node(data);
-    if(_head==null){
+    if(_tail==null){
       _head=newNode;
       _tail=newNode;
     }else{
-      newNode.prev=_tail;
+      _tail!.next=newNode;
       _tail=newNode;
     }
     length++;
@@ -33,19 +38,36 @@ class MySinglyLinkedList<T> {
 
   void removeHead(){
     if(_head==null) return;
-    _head=_head?.prev as _Node<T>?;
+    _head=_head?.next as _Node<T>?;
     length--;
   }
 
   void removeTail(){
     if(_head==null) return;
-    _tail=_tail?.prev as _Node<T>?;
-    length--;
+    if(_head==_tail){
+      _head=_tail=null;
+    }
+    _Node<T>? newTail=_head;
+    while(newTail?.next!=_tail){
+      newTail=newTail?.next as _Node<T>?;
+    }
+    _tail=newTail;
+  }
+
+  void printAll(){
+    _Node<T>? node=_head;
+    String toPrint="";
+    while(node!=null){
+      toPrint+="${node.data} ";
+      node=node.next as _Node<T>?;
+    }
+    print(toPrint);
+
   }
 }
 
 class _Node<T>{
-  _Node? prev;
+  _Node? next;
   late T data;
 
   _Node(this.data);
