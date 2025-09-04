@@ -66,16 +66,19 @@ class MySinglyLinkedList<T> {
     _length=0;
   }
 
-  void printAll(){
+  @override
+  String toString() {
     _Node<T>? node=_head;
-    String toPrint="";
+    String toPrint="< ";
     while(node!=null){
       toPrint+="${node.data} ";
       node=node.next as _Node<T>?;
     }
-    print(toPrint);
-
+    toPrint+=">";
+    return toPrint;
   }
+
+  void printAll() => print(toString());
 }
 
 class _Node<T>{
