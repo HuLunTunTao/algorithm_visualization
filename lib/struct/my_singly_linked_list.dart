@@ -46,12 +46,15 @@ class MySinglyLinkedList<T> {
     if(_head==null) return;
     if(_head==_tail){
       _head=_tail=null;
+      length--;
     }
     _Node<T>? newTail=_head;
     while(newTail?.next!=_tail){
       newTail=newTail?.next as _Node<T>?;
     }
     _tail=newTail;
+    _tail!.next=null;
+    length--;
   }
 
   void printAll(){
