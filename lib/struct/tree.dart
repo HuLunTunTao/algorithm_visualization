@@ -1,7 +1,8 @@
-// tree.dart
-
 import 'dart:io';
 import '../algo/tree_kmp.dart';
+
+//9.5大改进：保证封装性和解耦性，私有_Node类再定义了一个公开的对外接口Node，要不算法模块都无法调用！！
+//所有函数中接收外部传入的node时都得来一个强制转换 final typeNode=node as _Node<T>  L：重构一遍所有的变量和名称很痛苦~
 
 //子类公共暴露接口
 class Knowledge {
