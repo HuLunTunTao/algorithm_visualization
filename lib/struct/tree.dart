@@ -1,16 +1,23 @@
 import 'dart:io';
 import '../algo/tree_kmp.dart';
 
+class Knowledge   //测试拟一个知识类，到时候直接调用你们的
+{
+  late String name;
+  late int time;
+  late double difficulty;
+  Knowledge(this.name, this.time, this.difficulty);
+}
 
 class _Node<T> 
 {
-  String name;
-  T value; 
+  //String name;
+  T value;
   _Node<T>? parent;
   List<_Node<T>> children;
 
-  _Node(String name, T value, _Node<T>? parent)   //构造函数
-      : this.name = name,
+  _Node(T value, _Node<T>? parent)   //构造函数
+      :
         this.value = value,
         this.parent = parent,   //回指操作
         this.children = [];
@@ -18,41 +25,37 @@ class _Node<T>
 
 
 // 外部类，提供一个公共接口，隐藏内部实现
-class MyTree<T> 
+class MyTree<T extends Knowledge> 
 {
   final _Node<T> _root;
 
   //创建树的构造函数
-  MyTree(String rootName, T rootValue)
-      : _root = _Node<T>(rootName, rootValue, null);
+  MyTree(T rootValue)
+      : _root = _Node<T>(rootValue, null);
   
    _Node<T> get root => _root;  //提供对根节点的访问
 
   //添加节点函数
-  _Node<T> addNode(String name, T value, _Node<T> parent)   //节点名字、值、父节点
+  _Node<T> addNode(T value, _Node<T> parent)   //节点名字、值、父节点
   {
-    final newNode=_Node<T>(name, value, parent);
+    final newNode=_Node<T>(value, parent);
     parent.children.add(newNode);
     return newNode;
   }
 
 
   // 这个函数现在可以用来构建一个预定义的树结构
-  void buildTree() 
-  {
-    final List<String> terms = [
-      "ababa", "cc223d", "kksj", "最好情况", "最坏情况", "平均情况", "递归",
-      "分治思想", "动态规划", "贪心算法", "回溯", "暴力搜索", "数组", "链表", "单链表",
-      "双向链表", "循环链表", "栈", "队列", "双端队列", "优先队列", "循环队列", "二叉树",
-      "二叉搜索树", "平衡二叉树", "红黑树", "B 树", "B+ 树", "堆", "最小堆", "最大堆",
-    ];
-
+  void buildTree() {
     final rootNode = _root;
-    addNode(terms[0], 5 as T, rootNode);
-    addNode(terms[1], 10 as T, rootNode.children[0]);
-    addNode(terms[2], 20 as T, rootNode.children[0]);
 
-    //后续可以添加更多节点
+    // 创建 KnowledgePoint 实例
+    final knowledgePoint1 = Knowledge("ababa", 5, 0.5);
+    final knowledgePoint2 = Knowledge("cc223d", 10, 0.7);
+    final knowledgePoint3 = Knowledge("kksj", 20, 0.9);
+
+    addNode(knowledgePoint1 as T, rootNode);
+    addNode(knowledgePoint2 as T, rootNode.children[0]);
+    addNode(knowledgePoint3 as T, rootNode.children[0]);
   }
 
   //获取层数的实现
@@ -73,7 +76,7 @@ class MyTree<T>
     if (node == null) {
       return;
     }
-    print("当前访问的结点是${node.name}");
+    print("当前访问的结点是${node.value.name}");
     for (int i = 0; i < node.children.length; i++) {
       _Node<T> child = node.children[i];
       dfsPrint(child);
@@ -89,7 +92,7 @@ class MyTree<T>
       return;
     }
     node.parent!.children.remove(node);   //直接删除它父亲的这个孩子，dart会自动释放删除节点的所有子节点（删一个根后面子节点全删）
-    print("节点 ${node.name} 已删除。");
+    print("节点 ${node.value.name} 已删除。");
   }
 
   //保留子节点的删除
@@ -110,41 +113,41 @@ class MyTree<T>
     print("保留子节点的删除已完成");
   }
 
-  // 修改节点名称和value
-  void updateName(_Node<T>? node, String newName,T newValue) 
+  // 修改节点下的知识点名称和value
+  void updateName(_Node<T>? node, String newName, int newTime) 
   {
       if(node==null) 
       {
         print("目标节点为空，无法修改");
         return;
       }
-      node.name=newName;
-      node.value=newValue;
-      print("节点 ${node.name} 的name已更新为 ${newName}。");
-      print("节点 ${node.name} 的value已更新为 ${newValue}。");
+      node.value.name=newName;
+      node.value.time=newTime;
+      print("节点 ${node.value.name} 的name已更新为 ${newName}。");
+      print("节点 ${node.value.name} 的value已更新为 ${newTime}。");
   }
 
   //DFS搜索
-  int dfsFind(_Node<T>? node, String sname) 
+  _Node<T>? dfsFind(_Node<T>? node, String sname)   //引入
   {
     if (node == null) {
-      return -1;
+      return null;
     }
 
-    if (kmp(node.name, sname) != -1)  //调用写好的KMP算法
+    if (kmp(node.value.name, sname) != -1)  //调用写好的KMP算法
     {
-      return node.value as int;
+      return node;
     }
     
     for (int i = 0; i < node.children.length; i++) 
     {
       _Node<T> child = node.children[i];
-      int result = dfsFind(child, sname);
-      if (result != -1) 
+      _Node<T>? result=dfsFind(child, sname);
+      if (result !=null) 
       {
         return result;
       }
     }
-    return -1;
+    return null;
   }
 }
