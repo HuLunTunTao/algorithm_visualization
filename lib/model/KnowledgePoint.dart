@@ -1,10 +1,23 @@
+import '../struct/tree.dart';
+
 class KnowledgePoint {
   final String name; // 知识点名称（中文字符串，同时作为唯一标识）
   final List<String> prerequisites; // 前置知识点列表（存储知识点名称）
   final int difficulty; // 知识点难度（1-10之间的整数）
   final int studyTime; // 预计学习时间（分钟）
+  int _learnedCount=0; //该知识点已学次数
 
-  const KnowledgePoint({
+
+  int get learnedCount=>_learnedCount;
+  void incrementedLearnCount(){
+    _learnedCount+=1;
+  }
+  void resetLearnCount(){
+    _learnedCount=0;
+  }
+
+
+  KnowledgePoint({
     required this.name,
     required this.prerequisites,
     required this.difficulty,
@@ -63,21 +76,21 @@ class KnowledgePoint {
 class KnowledgePointRepository {
   static final List<KnowledgePoint> _allKnowledgePoints = [
     // 绝对基础（必须首先掌握）
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '时间复杂度',
       prerequisites: [],
       difficulty: 1,
       studyTime: 30,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '空间复杂度',
       prerequisites: ['时间复杂度'],
       difficulty: 1,
       studyTime: 20,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '数组',
       prerequisites: ['空间复杂度'],
       difficulty: 2,
@@ -85,28 +98,28 @@ class KnowledgePointRepository {
     ),
 
     // 基础数据结构（有一定顺序，但可部分并行）
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '链表',
       prerequisites: ['数组'],
       difficulty: 2,
       studyTime: 45,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '栈',
       prerequisites: ['链表'],
       difficulty: 2,
       studyTime: 30,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '队列',
       prerequisites: ['链表'],
       difficulty: 2,
       studyTime: 30,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '递归',
       prerequisites: ['栈'],
       difficulty: 3,
@@ -114,14 +127,14 @@ class KnowledgePointRepository {
     ),
 
     // 基础搜索算法
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '线性搜索',
       prerequisites: ['数组'],
       difficulty: 2,
       studyTime: 15,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '二分搜索',
       prerequisites: ['线性搜索'],
       difficulty: 3,
@@ -129,21 +142,21 @@ class KnowledgePointRepository {
     ),
 
     // 基础排序算法（可并行学习）
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '冒泡排序',
       prerequisites: ['数组'],
       difficulty: 2,
       studyTime: 20,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '插入排序',
       prerequisites: ['数组'],
       difficulty: 3,
       studyTime: 25,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '选择排序',
       prerequisites: ['数组'],
       difficulty: 3,
@@ -151,7 +164,7 @@ class KnowledgePointRepository {
     ),
 
     // 哈希表（重要基础结构）
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '哈希表',
       prerequisites: ['链表'],
       difficulty: 4,
@@ -159,21 +172,21 @@ class KnowledgePointRepository {
     ),
 
     // 树基础（需要递归基础）
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '二叉树',
       prerequisites: ['递归'],
       difficulty: 4,
       studyTime: 40,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '二叉搜索树',
       prerequisites: ['二叉树'],
       difficulty: 5,
       studyTime: 45,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '堆',
       prerequisites: ['二叉搜索树'],
       difficulty: 5,
@@ -181,21 +194,21 @@ class KnowledgePointRepository {
     ),
 
     // 高级排序（需要相应数据结构）
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '归并排序',
       prerequisites: ['递归'],
       difficulty: 4,
       studyTime: 45,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '快速排序',
       prerequisites: ['递归'],
       difficulty: 5,
       studyTime: 55,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '堆排序',
       prerequisites: ['堆'],
       difficulty: 6,
@@ -203,7 +216,7 @@ class KnowledgePointRepository {
     ),
 
     // 队列应用
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '优先队列',
       prerequisites: ['堆'],
       difficulty: 5,
@@ -211,28 +224,28 @@ class KnowledgePointRepository {
     ),
 
     // 算法策略（需要足够基础）
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '分治算法',
       prerequisites: ['递归', '归并排序', '快速排序'],
       difficulty: 5,
       studyTime: 55,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '贪心算法',
       prerequisites: ['哈希表', '冒泡排序', '插入排序', '选择排序'],
       difficulty: 5,
       studyTime: 50,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '动态规划',
       prerequisites: ['二叉搜索树', '归并排序', '快速排序', '贪心算法'],
       difficulty: 7,
       studyTime: 80,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '回溯算法',
       prerequisites: ['栈', '队列', '递归'],
       difficulty: 6,
@@ -240,14 +253,14 @@ class KnowledgePointRepository {
     ),
 
     // 图数据结构
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '图',
       prerequisites: ['队列', '哈希表'],
       difficulty: 6,
       studyTime: 60,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '图的表示',
       prerequisites: ['图'],
       difficulty: 5,
@@ -255,35 +268,35 @@ class KnowledgePointRepository {
     ),
 
     // 图算法
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'BFS',
       prerequisites: ['图的表示'],
       difficulty: 6,
       studyTime: 40,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'DFS',
       prerequisites: ['图的表示'],
       difficulty: 6,
       studyTime: 40,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '最短路径',
       prerequisites: ['BFS', 'DFS'],
       difficulty: 7,
       studyTime: 70,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '最小生成树',
       prerequisites: ['BFS', 'DFS'],
       difficulty: 7,
       studyTime: 60,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '拓扑排序',
       prerequisites: ['BFS'],
       difficulty: 6,
@@ -291,28 +304,28 @@ class KnowledgePointRepository {
     ),
 
     // 高级树结构
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'AVL树',
       prerequisites: ['二叉搜索树'],
       difficulty: 8,
       studyTime: 80,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '红黑树',
       prerequisites: ['二叉搜索树'],
       difficulty: 9,
       studyTime: 100,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'B树',
       prerequisites: ['AVL树'],
       difficulty: 8,
       studyTime: 80,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'Trie树',
       prerequisites: ['二叉树'],
       difficulty: 6,
@@ -320,21 +333,21 @@ class KnowledgePointRepository {
     ),
 
     // 字符串算法
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'KMP算法',
       prerequisites: ['Trie树', '二分搜索'],
       difficulty: 8,
       studyTime: 70,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'Boyer-Moore',
       prerequisites: ['二分搜索'],
       difficulty: 7,
       studyTime: 60,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'Rabin-Karp',
       prerequisites: ['哈希表'],
       difficulty: 7,
@@ -342,21 +355,21 @@ class KnowledgePointRepository {
     ),
 
     // 高级算法
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '强连通分量',
       prerequisites: ['DFS'],
       difficulty: 8,
       studyTime: 55,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: '网络流',
       prerequisites: ['图的表示', '最短路径'],
       difficulty: 9,
       studyTime: 80,
     ),
 
-    const KnowledgePoint(
+    KnowledgePoint(
       name: 'AC自动机',
       prerequisites: ['Trie树'],
       difficulty: 9,

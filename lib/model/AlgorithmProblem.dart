@@ -1,10 +1,12 @@
+import '../struct/tree.dart';
+
 class AlgorithmProblem {
   final String name;
   final Map<String, int> applicableKnowledgePoints;
   final String description;
   final List<String> tags;
 
-  const AlgorithmProblem({
+  AlgorithmProblem({
     required this.name,
     required this.applicableKnowledgePoints,
     required this.description,
@@ -12,7 +14,7 @@ class AlgorithmProblem {
   });
 }
 
-const List<AlgorithmProblem> algorithmProblems = [
+List<AlgorithmProblem> algorithmProblems = [
   AlgorithmProblem(
     name: "数组排序",
     applicableKnowledgePoints: {
