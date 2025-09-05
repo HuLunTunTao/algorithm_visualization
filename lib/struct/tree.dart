@@ -2,7 +2,8 @@ import 'dart:io';
 import '../algo/tree_kmp.dart';
 
 
-class _Node<T> {
+class _Node<T> 
+{
   String name;
   T value; 
   _Node<T>? parent;
@@ -17,7 +18,8 @@ class _Node<T> {
 
 
 // 外部类，提供一个公共接口，隐藏内部实现
-class MyTree<T> {
+class MyTree<T> 
+{
   final _Node<T> _root;
 
   //创建树的构造函数
@@ -36,7 +38,8 @@ class MyTree<T> {
 
 
   // 这个函数现在可以用来构建一个预定义的树结构
-  void buildTree() {
+  void buildTree() 
+  {
     final List<String> terms = [
       "ababa", "cc223d", "kksj", "最好情况", "最坏情况", "平均情况", "递归",
       "分治思想", "动态规划", "贪心算法", "回溯", "暴力搜索", "数组", "链表", "单链表",
@@ -53,7 +56,8 @@ class MyTree<T> {
   }
 
   //获取层数的实现
-  int getNodeLevel(_Node<T> node) {
+  int getNodeLevel(_Node<T> node) 
+  {
     int level = 0;
     _Node<T>? currentNode = node;
     while (currentNode?.parent != null) {
@@ -74,6 +78,50 @@ class MyTree<T> {
       _Node<T> child = node.children[i];
       dfsPrint(child);
     }
+  }
+
+  // 连带子节点的删除
+  void deleteNode_withoutson(_Node<T> node)
+  {
+    if (node==null||node.parent==null)
+    {
+      print("目标节点为空或未知错误，无法删除");
+      return;
+    }
+    node.parent!.children.remove(node);   //直接删除它父亲的这个孩子，dart会自动释放删除节点的所有子节点（删一个根后面子节点全删）
+    print("节点 ${node.name} 已删除。");
+  }
+
+  //保留子节点的删除
+  void deleteNode_withson(_Node<T> node)
+  {
+    if(node==null||node.parent==null)
+    {
+      print("目标节点为空或未知错误，无法删除");
+      return;
+    }
+
+    for (final elem in node.children)   //把删除节点的子节点都接上父亲
+    {
+      elem.parent=node.parent;
+      node.parent!.children.add(elem);  
+    }
+    node.parent!.children.remove(node);
+    print("保留子节点的删除已完成");
+  }
+
+  // 修改节点名称和value
+  void updateName(_Node<T>? node, String newName,T newValue) 
+  {
+      if(node==null) 
+      {
+        print("目标节点为空，无法修改");
+        return;
+      }
+      node.name=newName;
+      node.value=newValue;
+      print("节点 ${node.name} 的name已更新为 ${newName}。");
+      print("节点 ${node.name} 的value已更新为 ${newValue}。");
   }
 
   //DFS搜索
