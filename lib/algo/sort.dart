@@ -1,5 +1,5 @@
 class SortAlgo{
-  static void bubble_sort(List<num> list,Comparator<num> comp)
+  static void bubble_sort<T>(List<T> list,Comparator<T> comp)
   {
     for(int i=0;i<list.length-1;i++)
     {
@@ -7,9 +7,9 @@ class SortAlgo{
       {
         if(comp(list[j],list[j+1])>0)
         {
-          num temp=list[j];
+          T tem=list[j];
           list[j]=list[j+1];
-          list[j+1]=temp;
+          list[j+1]=tem;
         }
       }
     }
