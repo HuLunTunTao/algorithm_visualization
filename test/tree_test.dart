@@ -1,83 +1,127 @@
-// tree_test.dart
+import 'package:algorithm_visualization/model/KnowledgePoint.dart';
+import 'package:algorithm_visualization/struct/tree.dart';
 
-import 'dart:io';
-import '../lib/struct/tree.dart';
-import '../lib/model/KnowledgePoint.dart';
+// 假设的KMP函数，为了让测试文件可以运行
+int kmp(String text, String pattern) {
+  // 简化实现，仅用于测试，实际应使用真正的KMP算法
+  return text.indexOf(pattern);
+}
+
+// 假设的KnowledgePointRepository，为了让测试文件可以运行
+class KnowledgePointRepository {
+  static final List<KnowledgePoint> _allKnowledgePoints = [
+    KnowledgePoint(name: '入门知识点', prerequisites: [], difficulty: 1, studyTime: 30),
+    KnowledgePoint(name: '数组', prerequisites: ['入门知识点'], difficulty: 2, studyTime: 60),
+    KnowledgePoint(name: '链表', prerequisites: ['入门知识点'], difficulty: 3, studyTime: 90),
+    KnowledgePoint(name: '图论', prerequisites: ['数组', '链表'], difficulty: 4, studyTime: 120),
+    KnowledgePoint(name: '哈希表', prerequisites: ['数组'], difficulty: 4, studyTime: 90),
+  ];
+
+  static KnowledgePoint? getKnowledgePointByName(String name) {
+    return _allKnowledgePoints.firstWhere((kp) => kp.name == name);
+  }
+
+  static List<KnowledgePoint> getEntryLevelKnowledgePoints() {
+    return _allKnowledgePoints.where((kp) => kp.prerequisites.isEmpty).toList();
+  }
+}
 
 void main() {
-  // 验证依赖关系
-  if (!KnowledgePointRepository.validateDependencies()) {
-    print('知识点依赖关系验证失败。');
-    return;
+  print('--- 开始测试 MyTree/图结构 ---');
+
+  // 1. 创建图的根节点
+  final rootPoint = KnowledgePointRepository.getEntryLevelKnowledgePoints().first;
+  final rootNode = Knowledge(
+    name: rootPoint.name,
+    prerequisites: rootPoint.prerequisites,
+    difficulty: rootPoint.difficulty,
+    studyTime: rootPoint.studyTime,
+  );
+  final myGraph = MyTree<Knowledge>(rootNode);
+  print('\n--- 根节点已创建 ---');
+
+  // 2. 添加一个有单个父节点的节点（模拟树的行为）
+  final arrayPoint = KnowledgePointRepository.getKnowledgePointByName('数组')!;
+  final arrayNode = myGraph.addNode(
+    Knowledge(
+      name: arrayPoint.name,
+      prerequisites: arrayPoint.prerequisites,
+      difficulty: arrayPoint.difficulty,
+      studyTime: arrayPoint.studyTime,
+    ),
+    [myGraph.root], // 传入父节点列表
+  );
+  print('\n--- 已添加单个父节点：数组 ---');
+  myGraph.dfsPrint(myGraph.root);
+
+  // 3. 添加一个有多个父节点的节点（验证图的功能）
+  final graphTheoryPoint = KnowledgePointRepository.getKnowledgePointByName('图论')!;
+  final graphTheoryNode = myGraph.addNode(
+    Knowledge(
+      name: graphTheoryPoint.name,
+      prerequisites: graphTheoryPoint.prerequisites,
+      difficulty: graphTheoryPoint.difficulty,
+      studyTime: graphTheoryPoint.studyTime,
+    ),
+    [arrayNode, myGraph.root], // 传入多个父节点
+  );
+  print('\n--- 已添加多个父节点：图论 ---');
+  print('注意：由于DFS遍历方式，图论节点可能被多次访问，已添加visited集合解决');
+  myGraph.dfsPrint(myGraph.root);
+
+  // 4. 测试查找功能
+  print('\n--- 测试DFS查找功能 ---');
+  final foundNode = myGraph.dfsFind(myGraph.root, '图论');
+  if (foundNode != null) {
+    print('成功找到节点: ${foundNode.value.name}');
+  } else {
+    print('未找到节点');
   }
 
-  // 获取入门级知识点作为树根
-  final entryKnowledge = KnowledgePointRepository.getEntryLevelKnowledgePoints();
-  if (entryKnowledge.isEmpty) {
-    print('未找到入门级知识点，无法创建树。');
-    return;
-  }
-  // 选择第一个入门级知识点作为树的根
-  // 注意：这里我们创建一个新的 Knowledge 实例来作为树根
-  final rootKnowledge = Knowledge(
-    name: entryKnowledge.first.name,
-    prerequisites: entryKnowledge.first.prerequisites,
-    difficulty: entryKnowledge.first.difficulty,
-    studyTime: entryKnowledge.first.studyTime,
+  // 5. 测试“带子节点”的删除功能
+  print('\n--- 测试删除功能（保留子节点） ---');
+  final linkListPoint = KnowledgePointRepository.getKnowledgePointByName('链表')!;
+  final linkListNode = myGraph.addNode(
+    Knowledge(
+      name: linkListPoint.name,
+      prerequisites: linkListPoint.prerequisites,
+      difficulty: linkListPoint.difficulty,
+      studyTime: linkListPoint.studyTime,
+    ),
+    [myGraph.root],
+  );
+  // 添加一个子节点到链表
+  final childNode = myGraph.addNode(
+    Knowledge(name: '双向链表', prerequisites: ['链表'], difficulty: 4, studyTime: 60),
+    [linkListNode],
   );
 
-  // 创建一个MyTree实例，使用 Knowledge 作为泛型参数
-  final myTree = MyTree<Knowledge>(rootKnowledge);
-  final rootNode = myTree.root;
+  print('\n--- 删除前 ---');
+  myGraph.dfsPrint(myGraph.root);
 
-  print('--- 树创建成功 ---');
-  print('根节点: ${rootNode.value.name}');
+  myGraph.deleteNode_withson(linkListNode);
+  print('\n--- 删除后 ---');
+  myGraph.dfsPrint(myGraph.root);
 
-  // 获取与根节点直接相关的知识点
-  final dependentKnowledge = KnowledgePointRepository.getDependentKnowledgePoints(rootNode.value.name);
+  // 6. 测试“不带子节点”的删除功能
+  print('\n--- 测试删除功能（不保留子节点） ---');
+  final hashTablePoint = KnowledgePointRepository.getKnowledgePointByName('哈希表')!;
+  final hashTableNode = myGraph.addNode(
+    Knowledge(
+      name: hashTablePoint.name,
+      prerequisites: hashTablePoint.prerequisites,
+      difficulty: hashTablePoint.difficulty,
+      studyTime: hashTablePoint.studyTime,
+    ),
+    [arrayNode],
+  );
 
-  // 向树中添加子节点
-  // 使用 Knowledge 作为泛型参数
-  Node<Knowledge>? childNode;
-  if (dependentKnowledge.isNotEmpty) {
-    // 创建一个新的 Knowledge 实例
-    final childKnowledge = Knowledge(
-      name: dependentKnowledge.first.name,
-      prerequisites: dependentKnowledge.first.prerequisites,
-      difficulty: dependentKnowledge.first.difficulty,
-      studyTime: dependentKnowledge.first.studyTime,
-    );
-    childNode = myTree.addNode(childKnowledge, rootNode);
-    print('已添加子节点: ${childNode.value.name}');
-  }
+  print('\n--- 删除前 ---');
+  myGraph.dfsPrint(myGraph.root);
 
-  // 再次添加一个子节点
-  final arrayKnowledge = KnowledgePointRepository.getKnowledgePointByName('数组');
-  if (arrayKnowledge != null) {
-    // 创建一个新的 Knowledge 实例
-    final newArrayKnowledge = Knowledge(
-      name: arrayKnowledge.name,
-      prerequisites: arrayKnowledge.prerequisites,
-      difficulty: arrayKnowledge.difficulty,
-      studyTime: arrayKnowledge.studyTime,
-    );
-    myTree.addNode(newArrayKnowledge, childNode!);
-    print('已添加子节点: ${newArrayKnowledge.name}');
-  }
+  myGraph.deleteNode_withoutson(hashTableNode);
+  print('\n--- 删除后 ---');
+  myGraph.dfsPrint(myGraph.root);
 
-  print('\n--- DFS打印所有节点 ---');
-  myTree.dfsPrint(myTree.root);
-
-  print('\n--- 测试搜索功能 ---');
-  final searchResult = myTree.dfsFind(myTree.root, '数组');
-  if (searchResult != null) {
-    print('找到节点: ${searchResult.value.name}，位于第 ${myTree.getNodeLevel(searchResult)} 层');
-  } else {
-    print('未找到指定节点');
-  }
-
-  print('\n--- 测试删除功能（保留子节点） ---');
-  myTree.deleteNode_withson(childNode!);
-  print('\n--- 删除后再次DFS打印 ---');
-  myTree.dfsPrint(myTree.root);
+  print('\n--- 测试结束 ---');
 }
