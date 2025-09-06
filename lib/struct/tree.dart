@@ -29,13 +29,18 @@ abstract class Node<T extends Knowledge>
 class _Node<T extends Knowledge> implements Node<T> 
 {
   @override
-  T value;
+  late T value;
   @override
   _Node<T>? parent;
-  List<_Node<T>> children;
+  List<_Node<T>> children=[];
 
-  _Node(this.value, this.parent)
-      : this.children = [];
+  _Node(T value, _Node<T>? parent)
+  { 
+    this.value=value;
+    this.parent=parent;
+    this.children=[];
+  }
+    
 }
 
 // 外部类MyTree，提供公共接口
