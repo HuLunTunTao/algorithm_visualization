@@ -1,76 +1,83 @@
-// test_tree.dart
+// tree_test.dart
 
 import 'dart:io';
-import '../lib/algo/tree_kmp.dart';
 import '../lib/struct/tree.dart';
+import '../lib/model/KnowledgePoint.dart';
 
 void main() {
-  print('--- 开始测试 ---');
-
-  // 1. 测试创建树和添加节点
-  print('\n## 1. 测试创建树和添加节点');
-  final rootKnowledge = Knowledge('root_topic', 0, 0.0);
-  final tree = MyTree<Knowledge>(rootKnowledge);
-  final rootNode = tree.root;
-
-  final nodeA = tree.addNode(Knowledge('Math_Fundamentals', 10, 0.6), rootNode);
-  final nodeB = tree.addNode(Knowledge('Physics_Basics', 15, 0.7), rootNode);
-  final nodeA1 = tree.addNode(Knowledge('Calculus_I', 20, 0.8), nodeA);
-  final nodeA2 = tree.addNode(Knowledge('Linear_Algebra', 25, 0.9), nodeA);
-  final nodeB1 = tree.addNode(Knowledge('Quantum_Mechanics', 30, 0.95), nodeB);
-  final nodeB2 = tree.addNode(Knowledge('Thermodynamics', 28, 0.8), nodeB);
-
-  // 2. 测试 DFS 打印树结构
-  print('\n## 2. 测试 DFS 打印树结构');
-  tree.dfsPrint(rootNode);
-
-  // 3. 测试获取节点层级
-  print('\n## 3. 测试获取节点层级');
-  print('根节点 "${rootNode.value.name}" 的层级是: ${tree.getNodeLevel(rootNode)}');
-  print('节点 "${nodeA.value.name}" 的层级是: ${tree.getNodeLevel(nodeA)}');
-  print('节点 "${nodeA1.value.name}" 的层级是: ${tree.getNodeLevel(nodeA1)}');
-  print('节点 "${nodeB2.value.name}" 的层级是: ${tree.getNodeLevel(nodeB2)}');
-
-  // 4. 测试 DFS 搜索 (使用 kmp 模糊匹配)
-  print('\n## 4. 测试 DFS 搜索');
-  final foundNode = tree.dfsFind(rootNode, 'Calculus');
-  if (foundNode != null) {
-    print('通过模糊搜索 "Calculus" 找到节点: "${foundNode.value.name}"');
-  } else {
-    print('未找到包含 "Calculus" 的节点。');
+  // 验证依赖关系
+  if (!KnowledgePointRepository.validateDependencies()) {
+    print('知识点依赖关系验证失败。');
+    return;
   }
 
-  final notFoundNode = tree.dfsFind(rootNode, 'Chemistry');
-  if (notFoundNode != null) {
-    print('找到节点: ${notFoundNode.value.name}');
-  } else {
-    print('未找到包含 "Chemistry" 的节点。');
+  // 获取入门级知识点作为树根
+  final entryKnowledge = KnowledgePointRepository.getEntryLevelKnowledgePoints();
+  if (entryKnowledge.isEmpty) {
+    print('未找到入门级知识点，无法创建树。');
+    return;
+  }
+  // 选择第一个入门级知识点作为树的根
+  // 注意：这里我们创建一个新的 Knowledge 实例来作为树根
+  final rootKnowledge = Knowledge(
+    name: entryKnowledge.first.name,
+    prerequisites: entryKnowledge.first.prerequisites,
+    difficulty: entryKnowledge.first.difficulty,
+    studyTime: entryKnowledge.first.studyTime,
+  );
+
+  // 创建一个MyTree实例，使用 Knowledge 作为泛型参数
+  final myTree = MyTree<Knowledge>(rootKnowledge);
+  final rootNode = myTree.root;
+
+  print('--- 树创建成功 ---');
+  print('根节点: ${rootNode.value.name}');
+
+  // 获取与根节点直接相关的知识点
+  final dependentKnowledge = KnowledgePointRepository.getDependentKnowledgePoints(rootNode.value.name);
+
+  // 向树中添加子节点
+  // 使用 Knowledge 作为泛型参数
+  Node<Knowledge>? childNode;
+  if (dependentKnowledge.isNotEmpty) {
+    // 创建一个新的 Knowledge 实例
+    final childKnowledge = Knowledge(
+      name: dependentKnowledge.first.name,
+      prerequisites: dependentKnowledge.first.prerequisites,
+      difficulty: dependentKnowledge.first.difficulty,
+      studyTime: dependentKnowledge.first.studyTime,
+    );
+    childNode = myTree.addNode(childKnowledge, rootNode);
+    print('已添加子节点: ${childNode.value.name}');
   }
 
-  // 5. 测试修改节点名称和学习时间
-  print('\n## 5. 测试修改节点名称和学习时间');
-  tree.updateName(nodeA2, 'Discrete_Mathematics', 123);
-  print('修改后，再次打印树结构：');
-  tree.dfsPrint(rootNode);
+  // 再次添加一个子节点
+  final arrayKnowledge = KnowledgePointRepository.getKnowledgePointByName('数组');
+  if (arrayKnowledge != null) {
+    // 创建一个新的 Knowledge 实例
+    final newArrayKnowledge = Knowledge(
+      name: arrayKnowledge.name,
+      prerequisites: arrayKnowledge.prerequisites,
+      difficulty: arrayKnowledge.difficulty,
+      studyTime: arrayKnowledge.studyTime,
+    );
+    myTree.addNode(newArrayKnowledge, childNode!);
+    print('已添加子节点: ${newArrayKnowledge.name}');
+  }
 
-  // 6. 测试删除节点 (保留子节点)
-  print('\n## 6. 测试删除节点 (保留子节点)');
-  print('删除前，树结构为:');
-  tree.dfsPrint(rootNode);
-  
-  tree.deleteNode_withson(nodeB);
-  print('删除 "Physics_Basics" 后，树结构为:');
-  tree.dfsPrint(rootNode);
+  print('\n--- DFS打印所有节点 ---');
+  myTree.dfsPrint(myTree.root);
 
-  // 7. 测试删除节点 (不保留子节点)
-  print('\n## 7. 测试删除节点 (不保留子节点)');
-  final nodeA1_child = tree.addNode(Knowledge('Calculus_II', 20, 0.8), nodeA1);
-  print('删除前，树结构为:');
-  tree.dfsPrint(rootNode);
+  print('\n--- 测试搜索功能 ---');
+  final searchResult = myTree.dfsFind(myTree.root, '数组');
+  if (searchResult != null) {
+    print('找到节点: ${searchResult.value.name}，位于第 ${myTree.getNodeLevel(searchResult)} 层');
+  } else {
+    print('未找到指定节点');
+  }
 
-  tree.deleteNode_withoutson(nodeA1);
-  print('删除 "Calculus_I" 后，树结构为:');
-  tree.dfsPrint(rootNode);
-  
-  print('\n--- 测试结束 ---');
+  print('\n--- 测试删除功能（保留子节点） ---');
+  myTree.deleteNode_withson(childNode!);
+  print('\n--- 删除后再次DFS打印 ---');
+  myTree.dfsPrint(myTree.root);
 }

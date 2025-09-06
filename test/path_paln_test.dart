@@ -1,51 +1,63 @@
-// test_path_plan.dart
-
+// main.dart
 import 'dart:io';
+import '../lib/model/KnowledgePoint.dart';
 import '../lib/struct/tree.dart';
-import '../lib/struct/my_stack.dart';
-import '../lib/algo/guide_learningway.dart';
+import '../lib/algo/guide_learningway.dart'; // 引入你的路径规划文件
 
 void main() {
-  print('--- 开始测试路径规划功能 ---');
+  // 验证依赖关系
+  if (!KnowledgePointRepository.validateDependencies()) {
+    print('知识点依赖关系验证失败。');
+    return;
+  }
 
-  // 1. 创建一棵树作为测试数据
-  print('\n## 1. 建立测试树结构');
-  final rootKnowledge = Knowledge('学习根目录', 0, 0.0);
-  final tree = MyTree<Knowledge>(rootKnowledge);
-  final rootNode = tree.root;
+  // 获取入门级知识点作为树根
+  final entryKnowledge = KnowledgePointRepository.getEntryLevelKnowledgePoints();
+  if (entryKnowledge.isEmpty) {
+    print('未找到入门级知识点，无法创建树。');
+    return;
+  }
 
-  // 添加一些节点来模拟学习路径
-  final nodeA = tree.addNode(Knowledge('数学基础', 10, 0.6), rootNode);
-  final nodeB = tree.addNode(Knowledge('物理基础', 15, 0.7), rootNode);
-  final nodeA1 = tree.addNode(Knowledge('微积分I', 20, 0.8), nodeA);
-  final nodeA2 = tree.addNode(Knowledge('线性代数', 25, 0.9), nodeA);
-  final nodeA1_1 = tree.addNode(Knowledge('微积分II', 30, 0.85), nodeA1);
+  // 手动创建 Knowledge 实例作为树根
+  final rootKnowledge = Knowledge(
+    name: entryKnowledge.first.name,
+    prerequisites: entryKnowledge.first.prerequisites,
+    difficulty: entryKnowledge.first.difficulty,
+    studyTime: entryKnowledge.first.studyTime,
+  );
 
-  tree.dfsPrint(rootNode);
+  // 创建一个 MyTree 实例
+  final myTree = MyTree<Knowledge>(rootKnowledge);
+  final rootNode = myTree.root;
 
-  // 2. 测试：找到一个学习路径
-  print('\n## 2. 测试找到一个学习路径');
-  final foundPath = pathPlan(tree, '微积分II');
+  // 向树中添加子节点（这里添加一个假设的“数组”节点）
+  final arrayKnowledge = KnowledgePointRepository.getKnowledgePointByName('数组');
+  if (arrayKnowledge != null) {
+    // 手动创建 Knowledge 实例
+    final newArrayKnowledge = Knowledge(
+      name: arrayKnowledge.name,
+      prerequisites: arrayKnowledge.prerequisites,
+      difficulty: arrayKnowledge.difficulty,
+      studyTime: arrayKnowledge.studyTime,
+    );
+    myTree.addNode(newArrayKnowledge, rootNode);
+  }
 
-  if (foundPath != null) {
-    print('找到的学习路径（从目标节点到根节点）：');
-    while (!foundPath.isEmpty()) {
-      final item = foundPath.top();
-      if (item != null) {
-        print('  - 名称: ${item.value.name}, 学习时间: ${item.value.time}');
-        foundPath.pop();
+  print('\n--- 树创建完成 ---');
+  myTree.dfsPrint(myTree.root);
+
+  // 调用 pathPlan 函数来规划学习路径
+  final targetName = '数组';
+  final pathStack = pathPlan(myTree, targetName);
+
+  if (pathStack != null) {
+    print('\n--- 找到学习路径 ---');
+    while (!pathStack.isEmpty()) {
+      final node = pathStack.top(); // 先获取栈顶元素
+      if (node != null) {
+        print('-> ${node.value.name}');
+      }
+      pathStack.pop(); // 然后再弹出该元素
       }
     }
-  } else {
-    print('未找到学习路径。');
   }
-
-  // 3. 测试：未找到学习路径
-  print('\n## 3. 测试未找到学习路径');
-  final notFoundPath = pathPlan(tree, '化学基础');
-  if (notFoundPath == null) {
-    print('未找到该学习目标，符合预期。');
-  }
-
-  print('\n--- 测试结束 ---');
-}
