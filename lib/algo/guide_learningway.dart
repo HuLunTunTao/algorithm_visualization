@@ -1,28 +1,52 @@
-//这是规划学习路径代码
+//由于数据结构改变，单回溯结点已不适用，改为DFS+拓扑排除
 import '../struct/tree.dart';
 import '../struct/my_stack.dart';
 
-MyStack<Node<T>>? pathPlan<T extends Knowledge>(MyTree<T> tree,String targetName)  //传入学习目标名字
+//基于DFS+栈的拓扑排序实现
+void tuopu_DFS<T extends Knowledge>(
+    Node<T> node,
+    Set<Node<T>> visited,
+    MyStack<Node<T>> pathStack)
 {
-  //先调用树类中的DFS来搜索这个点吧
-  final Node<T>? target=tree.dfsFind(tree.root,targetName);
+  //将当前节点标记为已访问，防止重复访问
+  visited.add(node);
+  
+  //递归访问当前节点的所有子节点
+  if(node.children!=null)   //可空属性不能直接放循环，先判断吧
+  {
+    for (final child in node.children as List<Node<T>>) 
+    {
+      if (!visited.contains(child))   //如果访问节点里面还有孩子节点
+      {
+        tuopu_DFS(child,visited,pathStack);
+      }
+    }
+  }
 
-  if(target==null)
+  //当一个节点的所有子节点都被访问完毕后，将该节点推入栈中
+  pathStack.push(node);
+}
+
+// 规划学习路径，使用DFS拓扑排序来确保正确的学习顺序
+MyStack<Node<T>>? pathPlan<T extends Knowledge>(MyTree<T> tree, String targetName) 
+{
+  //找到目标知识点
+  final Node<T>? target=tree.dfsFind(tree.root,targetName);
+  if (target==null) 
   {
     print("没找到该学习目标内容");
     return null;
   }
+  
+  //初始化一个集合来跟踪已访问的节点
+  final visited=<Node<T>>{};
+  //初始化一个栈来存储最终的学习路径
+  final PathStack = MyStack<Node<T>>();
+  
+  //从根节点开始进行DFS拓扑排序
+  //全图遍历来找目标知识点
+  tuopu_DFS(tree.root as Node<T>, visited, PathStack);
 
-  //接着创建一个栈来接收路径上的点
-  final MyStack<Node<T>> pathStack=MyStack<Node<T>>();
-  //创中间点，用来当游标
-  Node<T>? node=target;
-  while(node!=null)
-  {
-    pathStack.push(node);
-    node=node.parent; //上移
-  }
   print("已找到学习目标点，并存入栈");
-  return pathStack; //依据对接人员要求返回栈
-
- }
+  return PathStack;
+}
