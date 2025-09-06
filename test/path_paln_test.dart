@@ -1,106 +1,96 @@
-// test/path_plan_test.dart
+// main.dart
+import 'dart:io';
 
-import '../lib/model/KnowledgePoint.dart';
-import '../lib/struct/tree.dart';
-import '../lib/struct/my_stack.dart';
-import '../lib/algo/guide_learningway.dart';
+import 'package:algorithm_visualization/struct/tree.dart';
+import 'package:algorithm_visualization/model/KnowledgePoint.dart';
+import 'package:algorithm_visualization/algo/guide_learningway.dart';
+import 'package:algorithm_visualization/struct/my_queue.dart';
+
+// 这是一个简单的辅助函数，用于将学习路径队列打印出来
+void printLearningPath(String targetName, MyQueue<Node<Knowledge>>? pathQueue) {
+  print('---');
+  if (pathQueue == null) {
+    print('无法找到目标知识点：“$targetName”的学习路径。');
+    return;
+  }
+
+  print('为知识点 “$targetName” 规划的学习路径如下：');
+  final pathList = [];
+  while (!pathQueue.isEmpty()) {
+    final node = pathQueue.dequeue();
+    if (node != null) {
+      pathList.add(node.value.name);
+    }
+  }
+  print(pathList.join(' -> '));
+  print('---');
+}
 
 void main() {
-  print("--- 开始测试 pathPlan 函数 ---");
-  
-  // 1. 获取所有知识点数据
-  final allKPs = KnowledgePointRepository.getAllKnowledgePoints();
-  final nodeMap = <String, Node<Knowledge>>{};
+  print("开始运行简单的学习路径规划测试...\n");
 
-  // 2. 构建知识图谱
-  // 找到所有没有前置条件的根节点
-  final rootKPs = allKPs.where((kp) => kp.prerequisites.isEmpty).toList();
+  // 1. 构建知识图
+  // 我们手动构建一个简单的依赖链来测试，以确保可控性
 
-  if (rootKPs.isEmpty) {
-    print("❌ 测试失败：未找到知识图谱的根节点。");
-    return;
-  }
-  final rootKP = rootKPs.first;
-  final tree = MyTree<Knowledge>(Knowledge(
-    name: rootKP.name,
-    prerequisites: rootKP.prerequisites,
-    difficulty: rootKP.difficulty,
-    studyTime: rootKP.studyTime,
-  ));
-  nodeMap[rootKP.name] = tree.root;
-
-  int addedCount = 1;
-  while (addedCount < allKPs.length) {
-    int newNodesAdded = 0;
-    for (final kp in allKPs) {
-      if (!nodeMap.containsKey(kp.name)) {
-        bool allParentsExist = kp.prerequisites.every((prereqName) => nodeMap.containsKey(prereqName));
-        if (allParentsExist) {
-          final parents = kp.prerequisites.map((prereqName) => nodeMap[prereqName]!).toList();
-          final newNode = tree.addNode(
-            Knowledge(
-              name: kp.name,
-              prerequisites: kp.prerequisites,
-              difficulty: kp.difficulty,
-              studyTime: kp.studyTime,
-            ),
-            parents,
-          );
-          nodeMap[kp.name] = newNode;
-          newNodesAdded++;
-        }
-      }
-    }
-    if (newNodesAdded == 0 && addedCount < allKPs.length) {
-      print("警告：检测到无法添加新节点，可能存在循环依赖或数据问题。");
-      break;
-    }
-    addedCount += newNodesAdded;
+  // 将 KnowledgePoint 对象转换为 Knowledge 对象
+  Knowledge transform(KnowledgePoint kp) {
+    return Knowledge(
+      name: kp.name,
+      prerequisites: kp.prerequisites,
+      difficulty: kp.difficulty,
+      studyTime: kp.studyTime,
+    );
   }
 
-  // 3. 调用 pathPlan 函数
-  final targetName = "拓扑排序";
-  print("\n--- 正在为目标知识点 '$targetName' 规划学习路径 ---");
-  
-  final pathStack = pathPlan<Knowledge>(tree, targetName);
-  
-  if (pathStack == null) {
-    print("❌ 测试失败：未能生成学习路径，目标节点可能不存在。");
-    return;
-  }
+  final rootKnowledge = transform(KnowledgePointRepository.getKnowledgePointByName('时间复杂度') as KnowledgePoint);
+  final tree = MyTree<Knowledge>(rootKnowledge);
 
-  // 4. 打印并验证结果
-  final resultList = <String>[];
-  // 按照你的思路修改，使用 top() 获取元素，然后 pop() 移除
-  while (!pathStack.isEmpty()) {
-    final poppedValue = pathStack.top(); // 获取栈顶元素
-    pathStack.pop(); // 移除栈顶元素
-    if (poppedValue != null) {
-      resultList.add(poppedValue.value.name);
-    }
-  }
-  
-  print("\n--- 生成的学习路径 ---");
-  print(resultList.join(' -> '));
+  // 添加一些关键知识点来构建图，模拟实际的依赖关系
+  final spaceComplexity = transform(KnowledgePointRepository.getKnowledgePointByName('空间复杂度') as KnowledgePoint);
+  final array = transform(KnowledgePointRepository.getKnowledgePointByName('数组') as KnowledgePoint);
+  final linkedList = transform(KnowledgePointRepository.getKnowledgePointByName('链表') as KnowledgePoint);
+  final stack = transform(KnowledgePointRepository.getKnowledgePointByName('栈') as KnowledgePoint);
+  final recursion = transform(KnowledgePointRepository.getKnowledgePointByName('递归') as KnowledgePoint);
+  final binaryTree = transform(KnowledgePointRepository.getKnowledgePointByName('二叉树') as KnowledgePoint);
+  final binarySearchTree = transform(KnowledgePointRepository.getKnowledgePointByName('二叉搜索树') as KnowledgePoint);
+  final dynamicProgramming = transform(KnowledgePointRepository.getKnowledgePointByName('动态规划') as KnowledgePoint);
+  final bfs = transform(KnowledgePointRepository.getKnowledgePointByName('BFS') as KnowledgePoint);
+  final dfs = transform(KnowledgePointRepository.getKnowledgePointByName('DFS') as KnowledgePoint);
+  final shortestPath = transform(KnowledgePointRepository.getKnowledgePointByName('最短路径') as KnowledgePoint);
+  final graphRepresentation = transform(KnowledgePointRepository.getKnowledgePointByName('图的表示') as KnowledgePoint);
 
-  // 验证拓扑排序的正确性
-  bool isValidTopologicalSort = true;
-  for (final kpName in resultList) {
-    final kp = KnowledgePointRepository.getKnowledgePointByName(kpName)!;
-    for (final prereq in kp.prerequisites) {
-      if (!resultList.sublist(0, resultList.indexOf(kpName)).contains(prereq)) {
-        isValidTopologicalSort = false;
-        print("❌ 错误：知识点 '$kpName' 的前置 '$prereq' 未提前学习。");
-        break;
-      }
-    }
-    if (!isValidTopologicalSort) break;
-  }
-  
-  print("\n--- 测试结果 ---");
-  if (isValidTopologicalSort) {
-    print("✅ 测试成功：生成的学习路径是一个有效的拓扑排序！");
-  } else {
-    print("❌ 测试失败：生成的路径不符合拓扑排序规则。");
-  }
+  // 使用addNode方法手动连接它们，模拟图的结构
+  final nodeSpaceComplexity = tree.addNode(spaceComplexity, [tree.root]);
+  final nodeArray = tree.addNode(array, [nodeSpaceComplexity]);
+  final nodeLinkedList = tree.addNode(linkedList, [nodeArray]);
+  final nodeStack = tree.addNode(stack, [nodeLinkedList]);
+  final nodeRecursion = tree.addNode(recursion, [nodeStack]);
+  final nodeBinaryTree = tree.addNode(binaryTree, [nodeRecursion]);
+  final nodeBinarySearchTree = tree.addNode(binarySearchTree, [nodeBinaryTree]);
+  final nodeDynamicProgramming = tree.addNode(dynamicProgramming, [nodeBinarySearchTree]);
+
+  // 构建图的路径
+  final nodeGraphRepresentation = tree.addNode(graphRepresentation, []); // 假设这是一个独立入口
+  final nodeBfs = tree.addNode(bfs, [nodeGraphRepresentation]);
+  final nodeDfs = tree.addNode(dfs, [nodeGraphRepresentation]);
+  final nodeShortestPath = tree.addNode(shortestPath, [nodeBfs, nodeDfs]);
+
+  // 2. 运行并验证算法
+
+  // 测试用例1：规划到“动态规划”的学习路径
+  print("\n--- 测试用例1：规划到“动态规划”的学习路径 ---");
+  final path1 = pathPlan(tree, '动态规划');
+  printLearningPath('动态规划', path1);
+
+  // 测试用例2：规划到“最短路径”的学习路径
+  print("\n--- 测试用例2：规划到“最短路径”的学习路径 ---");
+  final path2 = pathPlan(tree, '最短路径');
+  printLearningPath('最短路径', path2);
+
+  // 测试用例3：规划一个不存在的知识点
+  print("\n--- 测试用例3：规划一个不存在的知识点 ---");
+  final path3 = pathPlan(tree, '不存在的知识点');
+  printLearningPath('不存在的知识点', path3);
+
+  print("\n所有测试已完成。");
 }
