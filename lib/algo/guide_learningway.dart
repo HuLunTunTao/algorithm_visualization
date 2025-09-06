@@ -1,6 +1,7 @@
 //由于数据结构改变，单回溯结点已不适用，改为DFS+拓扑排除
 import '../struct/tree.dart';
 import '../struct/my_stack.dart';
+import '../struct/my_queue.dart';
 
 //基于DFS+栈的拓扑排序实现
 void tuopu_DFS<T extends Knowledge>(
@@ -28,7 +29,7 @@ void tuopu_DFS<T extends Knowledge>(
 }
 
 // 规划学习路径，使用DFS拓扑排序来确保正确的学习顺序
-MyStack<Node<T>>? pathPlan<T extends Knowledge>(MyTree<T> tree, String targetName) 
+MyQueue<Node<T>>? pathPlan<T extends Knowledge>(MyTree<T> tree, String targetName) 
 {
   //找到目标知识点
   final Node<T>? target=tree.dfsFind(tree.root,targetName);
@@ -46,7 +47,45 @@ MyStack<Node<T>>? pathPlan<T extends Knowledge>(MyTree<T> tree, String targetNam
   //从根节点开始进行DFS拓扑排序
   //全图遍历来找目标知识点
   tuopu_DFS(tree.root as Node<T>, visited, PathStack);
-
   print("已找到学习目标点，并存入栈");
-  return PathStack;
-}
+
+  //翻转一下栈的顺序？？
+  final temp = <Node<T>>[];
+  final lq=MyQueue<Node<T>>();
+
+    while (!PathStack.isEmpty()) {
+    final node =PathStack.top();
+    PathStack.pop();
+    if (node != null) {
+      temp.add(node);
+    }
+  }
+  for (int i = temp.length - 1; i >= 0; i--) {
+    lq.enqueue(temp[i]);
+  }
+
+  // 将翻转后栈中的元素直接转移到队列中
+  // 循环直到栈为空
+  while (!PathStack.isEmpty()) {
+    final node=PathStack.top();
+    PathStack.pop();
+    if (node!=null) 
+    {
+      // 直接将出栈的元素入队
+      lq.enqueue(node);
+    }
+  }
+
+  if (!lq.isEmpty()) 
+  {
+    print("已将学习路径从栈直接转移到队列。");
+    print("学习路径队列：");
+    lq.printAll();
+  } else {
+    print("学习路径队列为空。");
+  }
+  
+  // 返回最终的队列
+  return lq;
+
+  }
