@@ -1,63 +1,106 @@
-// main.dart
-import 'dart:io';
+// test/path_plan_test.dart
+
 import '../lib/model/KnowledgePoint.dart';
 import '../lib/struct/tree.dart';
-import '../lib/algo/guide_learningway.dart'; // 引入你的路径规划文件
+import '../lib/struct/my_stack.dart';
+import '../lib/algo/guide_learningway.dart';
 
 void main() {
-  // 验证依赖关系
-  if (!KnowledgePointRepository.validateDependencies()) {
-    print('知识点依赖关系验证失败。');
+  print("--- 开始测试 pathPlan 函数 ---");
+  
+  // 1. 获取所有知识点数据
+  final allKPs = KnowledgePointRepository.getAllKnowledgePoints();
+  final nodeMap = <String, Node<Knowledge>>{};
+
+  // 2. 构建知识图谱
+  // 找到所有没有前置条件的根节点
+  final rootKPs = allKPs.where((kp) => kp.prerequisites.isEmpty).toList();
+
+  if (rootKPs.isEmpty) {
+    print("❌ 测试失败：未找到知识图谱的根节点。");
     return;
   }
+  final rootKP = rootKPs.first;
+  final tree = MyTree<Knowledge>(Knowledge(
+    name: rootKP.name,
+    prerequisites: rootKP.prerequisites,
+    difficulty: rootKP.difficulty,
+    studyTime: rootKP.studyTime,
+  ));
+  nodeMap[rootKP.name] = tree.root;
 
-  // 获取入门级知识点作为树根
-  final entryKnowledge = KnowledgePointRepository.getEntryLevelKnowledgePoints();
-  if (entryKnowledge.isEmpty) {
-    print('未找到入门级知识点，无法创建树。');
-    return;
-  }
-
-  // 手动创建 Knowledge 实例作为树根
-  final rootKnowledge = Knowledge(
-    name: entryKnowledge.first.name,
-    prerequisites: entryKnowledge.first.prerequisites,
-    difficulty: entryKnowledge.first.difficulty,
-    studyTime: entryKnowledge.first.studyTime,
-  );
-
-  // 创建一个 MyTree 实例
-  final myTree = MyTree<Knowledge>(rootKnowledge);
-  final rootNode = myTree.root;
-
-  // 向树中添加子节点（这里添加一个假设的“数组”节点）
-  final arrayKnowledge = KnowledgePointRepository.getKnowledgePointByName('数组');
-  if (arrayKnowledge != null) {
-    // 手动创建 Knowledge 实例
-    final newArrayKnowledge = Knowledge(
-      name: arrayKnowledge.name,
-      prerequisites: arrayKnowledge.prerequisites,
-      difficulty: arrayKnowledge.difficulty,
-      studyTime: arrayKnowledge.studyTime,
-    );
-    myTree.addNode(newArrayKnowledge, rootNode);
-  }
-
-  print('\n--- 树创建完成 ---');
-  myTree.dfsPrint(myTree.root);
-
-  // 调用 pathPlan 函数来规划学习路径
-  final targetName = '数组';
-  final pathStack = pathPlan(myTree, targetName);
-
-  if (pathStack != null) {
-    print('\n--- 找到学习路径 ---');
-    while (!pathStack.isEmpty()) {
-      final node = pathStack.top(); // 先获取栈顶元素
-      if (node != null) {
-        print('-> ${node.value.name}');
-      }
-      pathStack.pop(); // 然后再弹出该元素
+  int addedCount = 1;
+  while (addedCount < allKPs.length) {
+    int newNodesAdded = 0;
+    for (final kp in allKPs) {
+      if (!nodeMap.containsKey(kp.name)) {
+        bool allParentsExist = kp.prerequisites.every((prereqName) => nodeMap.containsKey(prereqName));
+        if (allParentsExist) {
+          final parents = kp.prerequisites.map((prereqName) => nodeMap[prereqName]!).toList();
+          final newNode = tree.addNode(
+            Knowledge(
+              name: kp.name,
+              prerequisites: kp.prerequisites,
+              difficulty: kp.difficulty,
+              studyTime: kp.studyTime,
+            ),
+            parents,
+          );
+          nodeMap[kp.name] = newNode;
+          newNodesAdded++;
+        }
       }
     }
+    if (newNodesAdded == 0 && addedCount < allKPs.length) {
+      print("警告：检测到无法添加新节点，可能存在循环依赖或数据问题。");
+      break;
+    }
+    addedCount += newNodesAdded;
   }
+
+  // 3. 调用 pathPlan 函数
+  final targetName = "拓扑排序";
+  print("\n--- 正在为目标知识点 '$targetName' 规划学习路径 ---");
+  
+  final pathStack = pathPlan<Knowledge>(tree, targetName);
+  
+  if (pathStack == null) {
+    print("❌ 测试失败：未能生成学习路径，目标节点可能不存在。");
+    return;
+  }
+
+  // 4. 打印并验证结果
+  final resultList = <String>[];
+  // 按照你的思路修改，使用 top() 获取元素，然后 pop() 移除
+  while (!pathStack.isEmpty()) {
+    final poppedValue = pathStack.top(); // 获取栈顶元素
+    pathStack.pop(); // 移除栈顶元素
+    if (poppedValue != null) {
+      resultList.add(poppedValue.value.name);
+    }
+  }
+  
+  print("\n--- 生成的学习路径 ---");
+  print(resultList.join(' -> '));
+
+  // 验证拓扑排序的正确性
+  bool isValidTopologicalSort = true;
+  for (final kpName in resultList) {
+    final kp = KnowledgePointRepository.getKnowledgePointByName(kpName)!;
+    for (final prereq in kp.prerequisites) {
+      if (!resultList.sublist(0, resultList.indexOf(kpName)).contains(prereq)) {
+        isValidTopologicalSort = false;
+        print("❌ 错误：知识点 '$kpName' 的前置 '$prereq' 未提前学习。");
+        break;
+      }
+    }
+    if (!isValidTopologicalSort) break;
+  }
+  
+  print("\n--- 测试结果 ---");
+  if (isValidTopologicalSort) {
+    print("✅ 测试成功：生成的学习路径是一个有效的拓扑排序！");
+  } else {
+    print("❌ 测试失败：生成的路径不符合拓扑排序规则。");
+  }
+}
