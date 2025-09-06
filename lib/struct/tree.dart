@@ -1,21 +1,23 @@
 import 'dart:io';
 import '../algo/tree_kmp.dart';
+import '../model/KnowledgePoint.dart';
 
 //9.5大改进：保证封装性和解耦性，私有_Node类再定义了一个公开的对外接口Node，要不算法模块都无法调用！！
 //所有函数中接收外部传入的node时都得来一个强制转换 final typeNode=node as _Node<T>  L：重构一遍所有的变量和名称很痛苦~
 
-//子类公共暴露接口
-class Knowledge {
-  late String name;
-  late int time;
-  late double difficulty;
-  Knowledge(this.name, this.time, this.difficulty);
-}
-
-//测试拟一个知识类，到时候直接调用你们的
-class _KnowledgePoint extends Knowledge
-{
-  _KnowledgePoint(super.name,super.time,super.difficulty);
+//子类,继承知识点KnowledgePoint类的属性，减少代码修改量
+class Knowledge extends KnowledgePoint {
+  Knowledge({
+    required String name,
+    required List<String> prerequisites,
+    required int difficulty,
+    required int studyTime,
+  }) : super(
+          name: name,
+          prerequisites: prerequisites,
+          difficulty: difficulty,
+          studyTime: studyTime,
+        );
 }
 
 // Node的对外接口
@@ -128,18 +130,19 @@ class MyTree<T extends Knowledge>
     print("保留子节点的删除已完成");
   }
 
-  // 修改节点下的知识点名称和value
-  void updateName(Node<T>? node, String newName, int newTime) 
-  {
-    if (node==null) {
-      print("目标节点为空，无法修改");
-      return;
-    }
-    node.value.name=newName;
-    node.value.time=newTime;
-    print("节点 ${node.value.name} 的name已更新为 ${newName}。");
-    print("节点 ${node.value.name} 的value已更新为 ${newTime}。");
-  }
+  //9.6由于知识点类中的属性都是final的，无法修改，同时硬编码写入了数据，后面有需要这个功能再说
+  // // 修改节点下的知识点名称和value
+  // void updateName(Node<T>? node, String newName, int newTime) 
+  // {
+  //   if (node==null) {
+  //     print("目标节点为空，无法修改");
+  //     return;
+  //   }
+  //   node.value.name=newName;
+  //   node.value.time=newTime;
+  //   print("节点 ${node.value.name} 的name已更新为 ${newName}。");
+  //   print("节点 ${node.value.name} 的value已更新为 ${newTime}。");
+  // }
 
   //DFS搜索
   Node<T>? dfsFind(Node<T>? node, String sname) 
