@@ -8,6 +8,7 @@ import '../model/AlgorithmProblem.dart';
 import '../model/article.dart';
 import '../utils/knowledge_utils.dart';
 import '../utils/learning_storage.dart';
+import '../utils/constants.dart';
 import '../algo/guide_learningway.dart';
 import '../algo/tree_kmp.dart';
 import '../struct/my_queue.dart';
@@ -50,7 +51,12 @@ class _HomePageState extends State<HomePage> {
   void _buildGraph() {
     final points = KnowledgePointRepository.getAllKnowledgePoints();
     for (final kp in points) {
-      ctrl.addNode(kp.name, label: kp.name);
+      final learned = LearningStorage.getCount(kp.name) > 0;
+      ctrl.addNode(
+        kp.name,
+        label: kp.name,
+        color: learned ? Colors.green : Colors.blue,
+      );
     }
     for (final kp in points) {
       for (final pre in kp.prerequisites) {
@@ -83,6 +89,11 @@ class _HomePageState extends State<HomePage> {
 
   void _planPath() {
     final name = targetCtrl.text.trim();
+    final exists = KnowledgePointRepository.getAllKnowledgePoints().any((kp) => kp.name == name);
+    if (!exists) {
+      _toast('请选择有效的知识点', type: ToastificationType.error);
+      return;
+    }
     final q = pathPlan<KnowledgePoint>(tree, name);
     if (q == null) return;
     final List<Node<KnowledgePoint>> list = q.toList();
@@ -120,6 +131,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       queue = LearningStorage.getPathQueue();
     });
+    _refreshNodeColors();
     _toast('已学习 $name');
   }
 
@@ -141,7 +153,31 @@ class _HomePageState extends State<HomePage> {
       context: context,
       type: type,
       title: Text(msg),
+      autoCloseDuration: kToastDuration,
     );
+  }
+
+  /// Update node colors based on learned data.
+  void _refreshNodeColors() {
+    final points = KnowledgePointRepository.getAllKnowledgePoints();
+    for (final kp in points) {
+      final learned = LearningStorage.getCount(kp.name) > 0;
+      ctrl.setNodeColor(kp.name, learned ? Colors.green : Colors.blue);
+    }
+  }
+
+  Future<void> _clearAllData() async {
+    await LearningStorage.clearAll();
+    setState(() {
+      queue = LearningStorage.getPathQueue();
+    });
+    _refreshNodeColors();
+    _toast('数据已清空', type: ToastificationType.success);
+  }
+
+  List<String> _learnedNames() {
+    final names = KnowledgePointRepository.getAllKnowledgePoints().map((e) => e.name);
+    return LearningStorage.getLearnedNames(names);
   }
 
   Widget _buildMain() {
@@ -288,9 +324,26 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('学习路径规划'),
-                  TextField(
-                    controller: targetCtrl,
-                    decoration: const InputDecoration(labelText: '目标知识点'),
+                  Autocomplete<String>(
+                    optionsBuilder: (value) {
+                      if (value.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      }
+                      return KnowledgePointRepository
+                          .getAllKnowledgePoints()
+                          .map((e) => e.name)
+                          .where((name) => kmp(name, value.text) != -1);
+                    },
+                    onSelected: (selection) => targetCtrl.text = selection,
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      controller.text = targetCtrl.text;
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: const InputDecoration(labelText: '目标知识点'),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(onPressed: _planPath, child: const Text('规划路径')),
@@ -379,6 +432,28 @@ class _HomePageState extends State<HomePage> {
               title: const Text('拓扑排序'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => setState(() => view = MainView.topo),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('已学习知识点'),
+                      TextButton(onPressed: _clearAllData, child: const Text('清空数据')),
+                    ],
+                  ),
+                  Wrap(
+                    spacing: 4,
+                    children: _learnedNames().map((e) => Chip(label: Text(e))).toList(),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

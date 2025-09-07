@@ -19,6 +19,7 @@ class ArticleView extends StatelessWidget {
         }
         final content = snapshot.data ?? '暂无文章';
         final rec = Article.getRecommendedWithScores(name);
+        final after = Article.getAfterRecommended(name);
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -34,6 +35,19 @@ class ArticleView extends StatelessWidget {
                     return ActionChip(
                       label: Text('${e.key} (${e.value.toStringAsFixed(2)})'),
                       onPressed: () => onSelect?.call(e.key),
+                    );
+                  }).toList(),
+                ),
+              ],
+              if (after.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Text('后继推荐：', style: TextStyle(fontSize: 16)),
+                Wrap(
+                  spacing: 8,
+                  children: after.map((e) {
+                    return ActionChip(
+                      label: Text(e),
+                      onPressed: () => onSelect?.call(e),
                     );
                   }).toList(),
                 ),
