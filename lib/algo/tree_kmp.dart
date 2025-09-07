@@ -20,10 +20,13 @@ int kmp(String a1, String a2){
   return -1;
 }
 
-List<int> findnext(String a2){
+List<int> findnext(String a2)
+{
   var p=List<int>.filled(a2.length,0);
-  for(int i=1,j=0;i<a2.length;i++){
-    while(j>0&&a2[i]!=a2[j]){
+  for(int i=1,j=0;i<a2.length;i++)
+  {
+    while(j>0&&a2[i]!=a2[j])
+    {
     	j=p[j-1]; //回退到最长可用长度
 	  }
     if(a2[i]==a2[j])
