@@ -3,9 +3,10 @@
 import '../struct/tree.dart';
 import '../struct/my_stack.dart';
 import '../struct/my_queue.dart';
+import '../model/KnowledgePoint.dart';
 
 
-void findpre<T extends Knowledge>(Node<T> node,Set<Node<T>> preset)
+void findpre<T extends KnowledgePoint>(Node<T> node,Set<Node<T>> preset)
 {
   //若该节点已经在集合中或者没有父节点了(根)，停止
   if (preset.contains(node)) {
@@ -21,7 +22,7 @@ void findpre<T extends Knowledge>(Node<T> node,Set<Node<T>> preset)
 }
 
 //基于DFS+栈的拓扑排序实现
-void tuopu_DFS<T extends Knowledge>(
+void tuopu_DFS<T extends KnowledgePoint>(
     Node<T> node,
     Set<Node<T>> visited,
     Set<Node<T>> subNode,
@@ -52,7 +53,7 @@ void tuopu_DFS<T extends Knowledge>(
 }
 
 // 规划学习路径，使用DFS拓扑排序来确保正确的学习顺序
-MyQueue<Node<T>>? pathPlan<T extends Knowledge>(MyTree<T> tree, String targetName) 
+MyQueue<Node<T>>? pathPlan<T extends KnowledgePoint>(MyTree<T> tree, String targetName) 
 {
   //找到目标知识点
   final Node<T>? target=tree.dfsFind(tree.root,targetName);
