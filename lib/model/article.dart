@@ -1,7 +1,11 @@
 // 这个文件声明了文章类
+import 'dart:math';
+
 import 'package:flutter/services.dart';
 
+import '../algo/afterknowledge.dart';
 import '../algo/sort.dart';
+import '../struct/tree.dart';
 import 'KnowledgePoint.dart';
 import '../algo/afterknowledge.dart';
 
@@ -70,7 +74,7 @@ class Article{
     return res;
   }
 
-  static List<MapEntry<String,double>> getRecommendedWithScores(String articleName){
+  static List<MapEntry<String,double>> getRecommendedWithScores(String articleName){ //根据雅卡尔指数推荐
     if(jaccardMap[articleName]==null) Exception("不存在知识点为\"$articleName\"的文章");
     List<MapEntry<String,double>> list=[];
     for(final e in jaccardMap[articleName]!.entries.toList()){
@@ -82,9 +86,43 @@ class Article{
     return list;
   }
 
-  static List<String> getAfterRecommended(String articleName){
+  static List<String> getAfterRecommended(String articleName){ //推荐后继知识点
     final q = findDescendants(articleName);
     return q.toList().map((kp) => kp.name).toList();
+  }
+
+
+  //对树的节点的随机访问
+  // 已知图知识点图和已学知识点，随机采样一个未学知识点
+  static String? getRandomRecommended(MyTree<KnowledgePoint> tree,Iterable<String> allLearned,
+      {int choose = 0}){ //choose是选择的方法
+    final int numOfWay=2;
+    if(choose%numOfWay==0){//对全集随机访问
+
+      Set<String> set=allLearned.toSet();
+
+      final q=findDescendants(tree.root.value.name);
+
+      if(set.length+1<=q.length){ //如果树的总节点数 小于（说明有bug）等于（全学完了） 就返回空
+        return null;
+      }
+      final random=Random();
+      while(true){
+        String res=q[random.nextInt(q.length)]!.name;
+        if(!set.contains(res)){
+          return res;
+        }
+      }
+    }else{
+      //todo:添加随机访问方法
+    }
+
+  }
+
+  //随机推荐（根据学习时间，学习效果等）
+  String? getSuperRecommend(){
+    // Map<String> allLearned
+    //todo:根据相似程度，学习时间，难度等综合推荐
   }
 
 
