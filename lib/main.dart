@@ -9,9 +9,7 @@ import 'package:toastification/toastification.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LearningStorage.init();
-
-  runApp(const MyApp());
-
+  runApp(ToastificationWrapper(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
