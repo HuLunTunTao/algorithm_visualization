@@ -13,11 +13,13 @@ class GraphCanvas extends StatefulWidget {
     required this.controller,
     this.layoutType = LayoutType.fruchterman,
     this.orientation = BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
-    this.canvasMinSize = const Size(1200, 800),
-    this.defaultNodeSize = const Size(96, 48),
+    this.canvasMinSize = Size.zero,
+    this.defaultNodeSize = const Size(160, 80),
     this.edgeColor = const Color(0xFF5F6368),
     this.edgeWidth = 1.5,
     this.arrowColor = const Color(0xFF5F6368),
+    this.onNodeTap,
+
   });
 
   final GraphController controller;
@@ -29,6 +31,7 @@ class GraphCanvas extends StatefulWidget {
   final Color edgeColor;
   final double edgeWidth;
   final Color arrowColor;
+  final void Function(String id)? onNodeTap;
 
   @override
   State<GraphCanvas> createState() => _GraphCanvasState();
@@ -51,9 +54,9 @@ class _GraphCanvasState extends State<GraphCanvas> {
       ..isAntiAlias = true;
 
     _buchCfg = BuchheimWalkerConfiguration()
-      ..siblingSeparation = 18
-      ..levelSeparation = 30
-      ..subtreeSeparation = 24
+      ..siblingSeparation = 40
+      ..levelSeparation = 80
+      ..subtreeSeparation = 40
       ..orientation = widget.orientation;
 
     // ★ Force 布局交给自定义边渲染器（中点箭头，和边完全一致）
@@ -137,9 +140,16 @@ class _GraphCanvasState extends State<GraphCanvas> {
                   builder: (node) {
                     final id = node.key!.value as String;
                     final v = widget.controller.nodes[id]!;
+                    Widget child = v.build();
+                    if (widget.onNodeTap != null) {
+                      child = GestureDetector(onTap: () => widget.onNodeTap!(id), child: child);
+                    }
                     return ConstrainedBox(
-                      constraints: BoxConstraints.tight(widget.defaultNodeSize),
-                      child: v.build(),
+                      constraints: BoxConstraints(
+                        minWidth: widget.defaultNodeSize.width,
+                        minHeight: widget.defaultNodeSize.height,
+                      ),
+                      child: child,
                     );
                   },
                 ),
