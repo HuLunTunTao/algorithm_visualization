@@ -10,6 +10,7 @@ void main() {
   MyMap<String, int> map = MyMap<String, int>();
   List<String> keys = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
 
+
   for (int i = 0; i < keys.length; i++) {
     int value = random.nextInt(maxRandomInt);
     print("添加键值对: ${keys[i]} -> $value");
