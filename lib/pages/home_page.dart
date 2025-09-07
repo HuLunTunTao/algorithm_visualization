@@ -8,6 +8,7 @@ import '../model/AlgorithmProblem.dart';
 import '../model/article.dart';
 import '../utils/knowledge_utils.dart';
 import '../utils/learning_storage.dart';
+import '../utils/constants.dart';
 import '../algo/guide_learningway.dart';
 import '../algo/tree_kmp.dart';
 import '../struct/my_queue.dart';
@@ -16,7 +17,7 @@ import 'article_view.dart';
 import 'topo_view.dart';
 import 'package:toastification/toastification.dart';
 
-enum MainView { graph, article, topo }
+enum MainView { graph, article, topo, problem }
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,10 +33,16 @@ class _HomePageState extends State<HomePage> {
   final targetCtrl = TextEditingController();
   final problemCtrl = TextEditingController();
   List<String> pathResult = [];
-  List<AlgorithmProblem> problemResult = [];
   late MyQueue<String> queue;
   MainView view = MainView.graph;
   String? articleName;
+  String? problemName;
+
+  final ButtonStyle _btnStyle = ElevatedButton.styleFrom(
+    backgroundColor: Colors.orange,
+    foregroundColor: Colors.white,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  );
 
   @override
   void initState() {
@@ -50,7 +57,12 @@ class _HomePageState extends State<HomePage> {
   void _buildGraph() {
     final points = KnowledgePointRepository.getAllKnowledgePoints();
     for (final kp in points) {
-      ctrl.addNode(kp.name, label: kp.name);
+      final learned = LearningStorage.getCount(kp.name) > 0;
+      ctrl.addNode(
+        kp.name,
+        label: kp.name,
+        color: learned ? Colors.green : Colors.blue,
+      );
     }
     for (final kp in points) {
       for (final pre in kp.prerequisites) {
@@ -83,6 +95,11 @@ class _HomePageState extends State<HomePage> {
 
   void _planPath() {
     final name = targetCtrl.text.trim();
+    final exists = KnowledgePointRepository.getAllKnowledgePoints().any((kp) => kp.name == name);
+    if (!exists) {
+      _toast('请选择有效的知识点', type: ToastificationType.error);
+      return;
+    }
     final q = pathPlan<KnowledgePoint>(tree, name);
     if (q == null) return;
     final List<Node<KnowledgePoint>> list = q.toList();
@@ -120,6 +137,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       queue = LearningStorage.getPathQueue();
     });
+    _refreshNodeColors();
     _toast('已学习 $name');
   }
 
@@ -130,17 +148,87 @@ class _HomePageState extends State<HomePage> {
     _toast('已选择 $name');
   }
 
-  void _searchProblem() {
-    final q = problemCtrl.text.trim();
-    final res = algorithmProblems.where((p) => kmp(p.name, q) != -1).toList();
-    setState(() => problemResult = res);
-  }
-
   void _toast(String msg, {ToastificationType type = ToastificationType.info}) {
     toastification.show(
       context: context,
       type: type,
       title: Text(msg),
+      autoCloseDuration: kToastDuration,
+    );
+  }
+
+  /// Update node colors based on learned data.
+  void _refreshNodeColors() {
+    final points = KnowledgePointRepository.getAllKnowledgePoints();
+    for (final kp in points) {
+      final learned = LearningStorage.getCount(kp.name) > 0;
+      ctrl.setNodeColor(kp.name, learned ? Colors.green : Colors.blue);
+    }
+  }
+
+  Future<void> _clearAllData() async {
+    await LearningStorage.clearAll();
+    setState(() {
+      queue = LearningStorage.getPathQueue();
+    });
+    _refreshNodeColors();
+    _toast('数据已清空', type: ToastificationType.success);
+  }
+
+  List<String> _learnedNames() {
+    final names = KnowledgePointRepository.getAllKnowledgePoints().map((e) => e.name);
+    return LearningStorage.getLearnedNames(names);
+  }
+
+  void _showProblem(String name) {
+    setState(() {
+      problemName = name;
+      view = MainView.problem;
+    });
+  }
+
+  void _onProblemNodeTap(String id) {
+    if (id == problemName) return;
+    setState(() {
+      selected = id;
+      targetCtrl.text = id;
+    });
+    DefaultTabController.of(context)?.animateTo(1);
+    _toast('已选择 $id');
+  }
+
+  Widget _buildProblemView() {
+    if (problemName == null) {
+      return const Center(child: Text('未选择问题'));
+    }
+    final prob = algorithmProblems.firstWhere((p) => p.name == problemName);
+    final pCtrl = GraphController();
+    pCtrl.addNode(prob.name, label: prob.name, color: Colors.orange);
+    prob.applicableKnowledgePoints.forEach((kp, _) {
+      final learned = LearningStorage.getCount(kp) > 0;
+      pCtrl.addNode(kp, label: kp, color: learned ? Colors.green : Colors.blue);
+      pCtrl.addEdge(prob.name, kp, directed: true);
+    });
+    return Stack(
+      children: [
+        GraphCanvas(
+          controller: pCtrl,
+          layoutType: LayoutType.fruchterman,
+          orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
+          canvasMinSize: const Size(1000, 1000),
+          defaultNodeSize: const Size(160, 80),
+          onNodeTap: _onProblemNodeTap,
+        ),
+        Positioned(
+          top: 16,
+          left: 16,
+          child: ElevatedButton(
+            style: _btnStyle,
+            onPressed: () => setState(() => view = MainView.graph),
+            child: const Text('返回'),
+          ),
+        ),
+      ],
     );
   }
 
@@ -167,14 +255,32 @@ class _HomePageState extends State<HomePage> {
           },
         );
       case MainView.topo:
-        return TopoView(tree: tree);
+        return Stack(
+          children: [
+            TopoView(tree: tree),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: ElevatedButton(
+                style: _btnStyle,
+                onPressed: () => setState(() => view = MainView.graph),
+                child: const Text('返回'),
+              ),
+            ),
+          ],
+        );
+      case MainView.problem:
+        return _buildProblemView();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('算法学习助手')),
+      appBar: AppBar(
+        title: const Text('算法学习助手'),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Row(
         children: [
           Expanded(flex: 4, child: _buildMain()),
@@ -186,7 +292,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSide() {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Column(
         children: [
           const TabBar(
@@ -194,6 +300,7 @@ class _HomePageState extends State<HomePage> {
               Tab(text: '学习'),
               Tab(text: '路径'),
               Tab(text: '工具'),
+              Tab(text: '设置'),
             ],
           ),
           Expanded(
@@ -202,6 +309,7 @@ class _HomePageState extends State<HomePage> {
                 _buildLearningTab(),
                 _buildPathTab(),
                 _buildToolsTab(),
+                _buildSettingsTab(),
               ],
             ),
           ),
@@ -215,6 +323,7 @@ class _HomePageState extends State<HomePage> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(8),
       child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -226,6 +335,7 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   children: [
                     ElevatedButton(
+                      style: _btnStyle,
                       onPressed: () async {
                         await LearningStorage.increment(sel);
                         setState(() {});
@@ -235,6 +345,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
+                      style: _btnStyle,
                       onPressed: () async {
                         await LearningStorage.reset(sel);
                         setState(() {});
@@ -248,6 +359,7 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   children: [
                     ElevatedButton(
+                      style: _btnStyle,
                       onPressed: () {
                         if (view == MainView.article) {
                           setState(() => view = MainView.graph);
@@ -262,6 +374,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
+                      style: _btnStyle,
                       onPressed: () => _markLearned(sel),
                       child: const Text('已学习'),
                     ),
@@ -282,26 +395,57 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('学习路径规划'),
-                  TextField(
-                    controller: targetCtrl,
-                    decoration: const InputDecoration(labelText: '目标知识点'),
+                  Autocomplete<String>(
+                    optionsBuilder: (value) {
+                      if (value.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      }
+                      return KnowledgePointRepository
+                          .getAllKnowledgePoints()
+                          .map((e) => e.name)
+                          .where((name) => kmp(name, value.text) != -1);
+                    },
+                    onSelected: (selection) => targetCtrl.text = selection,
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      controller.text = targetCtrl.text;
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: const InputDecoration(labelText: '目标知识点'),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
-                  ElevatedButton(onPressed: _planPath, child: const Text('规划路径')),
+                  ElevatedButton(
+                    style: _btnStyle,
+                    onPressed: _planPath,
+                    child: const Text('规划路径'),
+                  ),
                   if (pathResult.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 4,
-                      children: pathResult.map((e) => Chip(label: Text(e))).toList(),
+                      children: pathResult
+                          .map((e) => Chip(
+                                label: Text(e),
+                                backgroundColor: Colors.lightBlueAccent,
+                              ))
+                          .toList(),
                     ),
                     const SizedBox(height: 8),
-                    ElevatedButton(onPressed: _updateQueue, child: const Text('更新学习路径')),
+                    ElevatedButton(
+                      style: _btnStyle,
+                      onPressed: _updateQueue,
+                      child: const Text('更新学习路径'),
+                    ),
                   ],
                 ],
               ),
@@ -309,6 +453,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 8),
           Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -356,25 +501,43 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('问题查询'),
-                  TextField(
-                    controller: problemCtrl,
-                    decoration: const InputDecoration(labelText: '问题'),
+                  Autocomplete<String>(
+                    optionsBuilder: (value) {
+                      if (value.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      }
+                      return algorithmProblems
+                          .map((e) => e.name)
+                          .where((name) => kmp(name, value.text) != -1);
+                    },
+                    onSelected: (selection) {
+                      problemCtrl.text = selection;
+                      _showProblem(selection);
+                    },
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      controller.text = problemCtrl.text;
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: const InputDecoration(labelText: '问题'),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(onPressed: _searchProblem, child: const Text('查询')),
-                  for (final p in problemResult) ListTile(title: Text(p.name)),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 8),
           Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
               title: const Text('拓扑排序'),
               trailing: const Icon(Icons.chevron_right),
@@ -382,6 +545,36 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(8),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('已学习知识点'),
+                  TextButton(onPressed: _clearAllData, child: const Text('清空数据')),
+                ],
+              ),
+              Wrap(
+                spacing: 4,
+                children: _learnedNames()
+                    .map((e) => Chip(label: Text(e), backgroundColor: Colors.greenAccent))
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

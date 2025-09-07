@@ -25,6 +25,17 @@ class LearningStorage {
     await box.put(name, 0);
   }
 
+  /// Clear all persisted learning data including counts and planned path.
+  static Future<void> clearAll() async {
+    await box.clear();
+    await pathBox.clear();
+  }
+
+  /// Names of knowledge points that have been learned at least once.
+  static List<String> getLearnedNames(Iterable<String> allNames) {
+    return allNames.where((n) => (box.get(n, defaultValue: 0) ?? 0) > 0).toList();
+  }
+
   // ------- Learning Path Queue -------
 
   static MyQueue<String> getPathQueue() {

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../algo/sort.dart';
 import 'KnowledgePoint.dart';
+import '../algo/afterknowledge.dart';
 
 class Article{
 
@@ -79,6 +80,11 @@ class Article{
     }
     SortAlgo.bubble_sort(list,(a,b)=>b.value.compareTo(a.value));
     return list;
+  }
+
+  static List<String> getAfterRecommended(String articleName){
+    final q = findDescendants(articleName);
+    return q.toList().map((kp) => kp.name).toList();
   }
 
 
