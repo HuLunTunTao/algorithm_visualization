@@ -18,6 +18,8 @@ class GraphCanvas extends StatefulWidget {
     this.edgeColor = const Color(0xFF5F6368),
     this.edgeWidth = 1.5,
     this.arrowColor = const Color(0xFF5F6368),
+    this.onNodeTap,
+
   });
 
   final GraphController controller;
@@ -29,6 +31,7 @@ class GraphCanvas extends StatefulWidget {
   final Color edgeColor;
   final double edgeWidth;
   final Color arrowColor;
+  final void Function(String id)? onNodeTap;
 
   @override
   State<GraphCanvas> createState() => _GraphCanvasState();
@@ -137,9 +140,13 @@ class _GraphCanvasState extends State<GraphCanvas> {
                   builder: (node) {
                     final id = node.key!.value as String;
                     final v = widget.controller.nodes[id]!;
+                    Widget child = v.build();
+                    if (widget.onNodeTap != null) {
+                      child = GestureDetector(onTap: () => widget.onNodeTap!(id), child: child);
+                    }
                     return ConstrainedBox(
                       constraints: BoxConstraints.tight(widget.defaultNodeSize),
-                      child: v.build(),
+                      child: child,
                     );
                   },
                 ),
