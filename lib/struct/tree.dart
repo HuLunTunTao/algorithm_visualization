@@ -6,23 +6,8 @@ import '../model/KnowledgePoint.dart';
 //所有函数中接收外部传入的node时都得来一个强制转换 final typeNode=node as _Node<T>  L：重构一遍所有的变量和名称很痛苦~
 //9.6大改动，由于修改了树结构，现在整体改为图实现功能
 
-//子类,继承知识点KnowledgePoint类的属性，减少代码修改量
-class Knowledge extends KnowledgePoint {
-  Knowledge({
-    required String name,
-    required List<String> prerequisites,
-    required int difficulty,
-    required int studyTime,
-  }) : super(
-          name: name,
-          prerequisites: prerequisites,
-          difficulty: difficulty,
-          studyTime: studyTime,
-        );
-}
-
 // Node的对外接口
-abstract class Node<T extends Knowledge> 
+abstract class Node<T extends KnowledgePoint> 
 {
   //为了方便外部功能调用，全打开吧
   T get value;
@@ -31,7 +16,7 @@ abstract class Node<T extends Knowledge>
 }
 
 //核心私有Node
-class _Node<T extends Knowledge> implements Node<T> 
+class _Node<T extends KnowledgePoint> implements Node<T> 
 {
   @override
   late T value;
@@ -49,7 +34,7 @@ class _Node<T extends Knowledge> implements Node<T>
 }
 
 // 外部类MyTree，提供公共接口
-class MyTree<T extends Knowledge> 
+class MyTree<T extends KnowledgePoint> 
 {
   final _Node<T> _root;
 
