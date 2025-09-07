@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'utils/learning_storage.dart';
 
+import 'package:toastification/toastification.dart';
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LearningStorage.init();
+
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
