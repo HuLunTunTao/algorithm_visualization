@@ -154,6 +154,7 @@ class _HomePageState extends State<HomePage> {
       type: type,
       title: Text(msg),
       autoCloseDuration: kToastDuration,
+
     );
   }
 
@@ -229,7 +230,31 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
+
     );
+  }
+
+  /// Update node colors based on learned data.
+  void _refreshNodeColors() {
+    final points = KnowledgePointRepository.getAllKnowledgePoints();
+    for (final kp in points) {
+      final learned = LearningStorage.getCount(kp.name) > 0;
+      ctrl.setNodeColor(kp.name, learned ? Colors.green : Colors.blue);
+    }
+  }
+
+  Future<void> _clearAllData() async {
+    await LearningStorage.clearAll();
+    setState(() {
+      queue = LearningStorage.getPathQueue();
+    });
+    _refreshNodeColors();
+    _toast('数据已清空', type: ToastificationType.success);
+  }
+
+  List<String> _learnedNames() {
+    final names = KnowledgePointRepository.getAllKnowledgePoints().map((e) => e.name);
+    return LearningStorage.getLearnedNames(names);
   }
 
   Widget _buildMain() {
@@ -542,6 +567,28 @@ class _HomePageState extends State<HomePage> {
               title: const Text('拓扑排序'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => setState(() => view = MainView.topo),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('已学习知识点'),
+                      TextButton(onPressed: _clearAllData, child: const Text('清空数据')),
+                    ],
+                  ),
+                  Wrap(
+                    spacing: 4,
+                    children: _learnedNames().map((e) => Chip(label: Text(e))).toList(),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
