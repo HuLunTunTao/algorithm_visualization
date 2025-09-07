@@ -31,19 +31,19 @@ void main() {
 
   // 1. 创建图的根节点
   final rootPoint = KnowledgePointRepository.getEntryLevelKnowledgePoints().first;
-  final rootNode = Knowledge(
+  final rootNode = KnowledgePoint(
     name: rootPoint.name,
     prerequisites: rootPoint.prerequisites,
     difficulty: rootPoint.difficulty,
     studyTime: rootPoint.studyTime,
   );
-  final myGraph = MyTree<Knowledge>(rootNode);
+  final myGraph = MyTree<KnowledgePoint>(rootNode);
   print('\n--- 根节点已创建 ---');
 
   // 2. 添加一个有单个父节点的节点（模拟树的行为）
   final arrayPoint = KnowledgePointRepository.getKnowledgePointByName('数组')!;
   final arrayNode = myGraph.addNode(
-    Knowledge(
+    KnowledgePoint(
       name: arrayPoint.name,
       prerequisites: arrayPoint.prerequisites,
       difficulty: arrayPoint.difficulty,
@@ -57,7 +57,7 @@ void main() {
   // 3. 添加一个有多个父节点的节点（验证图的功能）
   final graphTheoryPoint = KnowledgePointRepository.getKnowledgePointByName('图论')!;
   final graphTheoryNode = myGraph.addNode(
-    Knowledge(
+    KnowledgePoint(
       name: graphTheoryPoint.name,
       prerequisites: graphTheoryPoint.prerequisites,
       difficulty: graphTheoryPoint.difficulty,
@@ -82,7 +82,7 @@ void main() {
   print('\n--- 测试删除功能（保留子节点） ---');
   final linkListPoint = KnowledgePointRepository.getKnowledgePointByName('链表')!;
   final linkListNode = myGraph.addNode(
-    Knowledge(
+    KnowledgePoint(
       name: linkListPoint.name,
       prerequisites: linkListPoint.prerequisites,
       difficulty: linkListPoint.difficulty,
@@ -92,7 +92,7 @@ void main() {
   );
   // 添加一个子节点到链表
   final childNode = myGraph.addNode(
-    Knowledge(name: '双向链表', prerequisites: ['链表'], difficulty: 4, studyTime: 60),
+    KnowledgePoint(name: '双向链表', prerequisites: ['链表'], difficulty: 4, studyTime: 60),
     [linkListNode],
   );
 
@@ -107,7 +107,7 @@ void main() {
   print('\n--- 测试删除功能（不保留子节点） ---');
   final hashTablePoint = KnowledgePointRepository.getKnowledgePointByName('哈希表')!;
   final hashTableNode = myGraph.addNode(
-    Knowledge(
+    KnowledgePoint(
       name: hashTablePoint.name,
       prerequisites: hashTablePoint.prerequisites,
       difficulty: hashTablePoint.difficulty,
