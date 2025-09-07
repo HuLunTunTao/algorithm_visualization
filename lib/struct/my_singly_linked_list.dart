@@ -82,7 +82,7 @@ class MySinglyLinkedList<T> {
 }
 
 class _Node<T>{
-  _Node? next;
+  _Node<T>? next;
   late T data;
 
   _Node(this.data);
