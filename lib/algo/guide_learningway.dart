@@ -85,21 +85,16 @@ MyQueue<Node<T>>? pathPlan<T extends KnowledgePoint>(MyTree<T> tree, String targ
   }
   print("前置知识点已入栈");
 
-  //再把知识点反向出栈顺序入队
+  // 直接把出栈顺序加入队列
   final lq=MyQueue<Node<T>>();
-  final tem=<Node<T>>[];
-
-  // 循环直到栈为空，将元素放入临时列表
-  while (!PathStack.isEmpty()) {
-    final node =PathStack.top();
+  while (!PathStack.isEmpty()) 
+  {
+    final node = PathStack.top();
     PathStack.pop();
-    if (node != null) {
-      tem.add(node);
+    if (node != null) 
+    {
+      lq.enqueue(node);
     }
-  }
-    // 从临时列表反向遍历，将元素放入队列
-  for (int i = tem.length - 1; i >= 0; i--) {
-    lq.enqueue(tem[i]);
   }
 
   if (!lq.isEmpty()) 
