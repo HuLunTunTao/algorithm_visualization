@@ -22,8 +22,14 @@ void main(){
   print(stack);
 
   print("入栈15个元素");
+  final List<int> listToPush=[];
   for(int i=0;i<15;i++){
-    stack.push(random.nextInt(maxRandomInt));
+    listToPush.add(random.nextInt(maxRandomInt));
+    
+  }
+  print("插入元素为:$listToPush");
+  for(int i=0;i<15;i++){
+    stack.push(listToPush[i]);
   }
   print(stack);
 

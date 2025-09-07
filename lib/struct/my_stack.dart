@@ -6,7 +6,7 @@ class MyStack<T> {
     list=MySinglyLinkedList<T>();
   }
   
-  void push(T data)=>list.insertHead(data);
+  void push(T data)=>list.insertTail(data);
 
   void pop()=>list.removeTail();
 
