@@ -30,8 +30,10 @@ class TopoView extends StatelessWidget {
       if (n != null) order.add(n);
     }
     final ctrl = GraphController();
-    for (final n in order) {
+    for (int i = 0; i < order.length; i++) {
+      final n = order[i];
       ctrl.addNode(n.value.name, label: n.value.name);
+      ctrl.setVisitedOrder(n.value.name, i + 1);
     }
     for (int i = 0; i < order.length - 1; i++) {
       ctrl.addEdge(order[i].value.name, order[i + 1].value.name, directed: true);
