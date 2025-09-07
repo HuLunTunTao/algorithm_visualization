@@ -71,6 +71,18 @@ class Article{
     return res;
   }
 
+  static List<MapEntry<String,double>> getRecommendedWithScores(String articleName){
+    if(jaccardMap[articleName]==null) Exception("不存在知识点为\"$articleName\"的文章");
+    List<MapEntry<String,double>> list=[];
+    for(final e in jaccardMap[articleName]!.entries.toList()){
+      if(e.value>0){
+        list.add(e);
+      }
+    }
+    SortAlgo.bubble_sort(list,(a,b)=>b.value.compareTo(a.value));
+    return list;
+  }
+
 
 
   static Future<List<String>> getArticleKeyWordsByName(String name) async{

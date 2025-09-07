@@ -13,8 +13,8 @@ class GraphCanvas extends StatefulWidget {
     required this.controller,
     this.layoutType = LayoutType.fruchterman,
     this.orientation = BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
-    this.canvasMinSize = const Size(1200, 800),
-    this.defaultNodeSize = const Size(96, 48),
+    this.canvasMinSize = Size.zero,
+    this.defaultNodeSize = const Size(160, 80),
     this.edgeColor = const Color(0xFF5F6368),
     this.edgeWidth = 1.5,
     this.arrowColor = const Color(0xFF5F6368),
@@ -145,7 +145,10 @@ class _GraphCanvasState extends State<GraphCanvas> {
                       child = GestureDetector(onTap: () => widget.onNodeTap!(id), child: child);
                     }
                     return ConstrainedBox(
-                      constraints: BoxConstraints.tight(widget.defaultNodeSize),
+                      constraints: BoxConstraints(
+                        minWidth: widget.defaultNodeSize.width,
+                        minHeight: widget.defaultNodeSize.height,
+                      ),
                       child: child,
                     );
                   },

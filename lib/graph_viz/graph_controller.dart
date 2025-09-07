@@ -7,7 +7,7 @@ class VizNode {
   VizNode({
     required this.id,
     this.label = '',
-    this.color = Colors.blue,
+    this.color = Colors.lightBlue,
     this.highlighted = false,
     this.highlightColor = Colors.orange,
     this.visitedOrder,
@@ -32,14 +32,14 @@ class VizNode {
     final base = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: highlighted
             ? [BoxShadow(color: highlightColor.withOpacity(.6), blurRadius: 12)]
-            : [],
+            : [BoxShadow(color: Colors.black12.withOpacity(.08), blurRadius: 4)],
         border: highlighted
             ? Border.all(color: highlightColor, width: 2)
-            : Border.all(color: Colors.black12, width: 1),
+            : Border.all(color: color, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -63,7 +63,7 @@ class VizNode {
             ),
           Text(
             label.isEmpty ? id : label,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ],
       ),

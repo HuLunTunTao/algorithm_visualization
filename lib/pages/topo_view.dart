@@ -9,8 +9,8 @@ import '../graph_viz/graph_canvas.dart';
 import '../graph_viz/graph_controller.dart';
 import '../utils/knowledge_utils.dart';
 
-class TopoPage extends StatelessWidget {
-  const TopoPage({super.key, required this.tree});
+class TopoView extends StatelessWidget {
+  const TopoView({super.key, required this.tree});
 
   final MyTree<KnowledgePoint> tree;
 
@@ -36,13 +36,10 @@ class TopoPage extends StatelessWidget {
     for (int i = 0; i < order.length - 1; i++) {
       ctrl.addEdge(order[i].value.name, order[i + 1].value.name, directed: true);
     }
-    return Scaffold(
-      appBar: AppBar(title: const Text('拓扑排序')),
-      body: GraphCanvas(
-        controller: ctrl,
-        layoutType: LayoutType.buchheim,
-        orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
-      ),
+    return GraphCanvas(
+      controller: ctrl,
+      layoutType: LayoutType.buchheim,
+      orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
     );
   }
 }
