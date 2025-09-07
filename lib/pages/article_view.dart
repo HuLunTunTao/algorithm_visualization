@@ -25,7 +25,7 @@ class ArticleView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GptMarkdown(content),
+              GptMarkdown(content,style: TextStyle(fontSize: 12),),
               const SizedBox(height: 24),
               if (rec.isNotEmpty) ...[
                 const Text('相关推荐：', style: TextStyle(fontSize: 16)),

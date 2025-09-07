@@ -234,28 +234,28 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Update node colors based on learned data.
-  void _refreshNodeColors() {
-    final points = KnowledgePointRepository.getAllKnowledgePoints();
-    for (final kp in points) {
-      final learned = LearningStorage.getCount(kp.name) > 0;
-      ctrl.setNodeColor(kp.name, learned ? Colors.green : Colors.blue);
-    }
-  }
-
-  Future<void> _clearAllData() async {
-    await LearningStorage.clearAll();
-    setState(() {
-      queue = LearningStorage.getPathQueue();
-    });
-    _refreshNodeColors();
-    _toast('数据已清空', type: ToastificationType.success);
-  }
-
-  List<String> _learnedNames() {
-    final names = KnowledgePointRepository.getAllKnowledgePoints().map((e) => e.name);
-    return LearningStorage.getLearnedNames(names);
-  }
+  // /// Update node colors based on learned data.
+  // void _refreshNodeColors() {
+  //   final points = KnowledgePointRepository.getAllKnowledgePoints();
+  //   for (final kp in points) {
+  //     final learned = LearningStorage.getCount(kp.name) > 0;
+  //     ctrl.setNodeColor(kp.name, learned ? Colors.green : Colors.blue);
+  //   }
+  // }
+  //
+  // Future<void> _clearAllData() async {
+  //   await LearningStorage.clearAll();
+  //   setState(() {
+  //     queue = LearningStorage.getPathQueue();
+  //   });
+  //   _refreshNodeColors();
+  //   _toast('数据已清空', type: ToastificationType.success);
+  // }
+  //
+  // List<String> _learnedNames() {
+  //   final names = KnowledgePointRepository.getAllKnowledgePoints().map((e) => e.name);
+  //   return LearningStorage.getLearnedNames(names);
+  // }
 
   Widget _buildMain() {
     switch (view) {
@@ -264,7 +264,7 @@ class _HomePageState extends State<HomePage> {
           controller: ctrl,
           layoutType: LayoutType.fruchterman,
           orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
-          canvasMinSize: const Size(2000, 2000),
+          canvasMinSize: const Size(5000, 5000),
           defaultNodeSize: const Size(160, 80),
           onNodeTap: _onNodeTap,
         );
@@ -309,7 +309,7 @@ class _HomePageState extends State<HomePage> {
       body: Row(
         children: [
           Expanded(flex: 4, child: _buildMain()),
-          Expanded(flex: 1, child: _buildSide()),
+          Expanded(flex: 2, child: _buildSide()),
         ],
       ),
     );
