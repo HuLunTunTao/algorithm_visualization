@@ -1,15 +1,18 @@
 // 这个文件声明了文章类
-import 'dart:io';
+import 'dart:math';
 
+import 'package:flutter/services.dart';
 
+import '../algo/afterknowledge.dart';
 import '../algo/sort.dart';
+import '../struct/tree.dart';
 import 'KnowledgePoint.dart';
+import '../algo/afterknowledge.dart';
 
 class Article{
 
 
-  static final String _filePathPrefix="/Users/hltt/projects/llm_generate/";
-  static late List<KnowledgePoint> _knowledgeList=[];
+  static late List<KnowledgePoint> _knowledgeList = [];
 
   static final Map<String,List<String>> _keyWordsMap={};
   static final Map<String,String> _articleMap={};
@@ -21,11 +24,11 @@ class Article{
     _knowledgeList=list;
 
     for(final n in _knowledgeList){
-      final kw=getArticleKeyWordsByName(n.name);
-      final article=getArticleStringByName(n.name);
+      final kw = getArticleKeyWordsByName(n.name);
+      final article = getArticleStringByName(n.name);
 
-      _keyWordsMap[n.name]=await kw;
-      _articleMap[n.name]=await article;
+      _keyWordsMap[n.name] = await kw;
+      _articleMap[n.name] = await article;
 
       // print(await kw);
     }
@@ -71,27 +74,73 @@ class Article{
     return res;
   }
 
+  static List<MapEntry<String,double>> getRecommendedWithScores(String articleName){ //根据雅卡尔指数推荐
+    if(jaccardMap[articleName]==null) Exception("不存在知识点为\"$articleName\"的文章");
+    List<MapEntry<String,double>> list=[];
+    for(final e in jaccardMap[articleName]!.entries.toList()){
+      if(e.value>0){
+        list.add(e);
+      }
+    }
+    SortAlgo.bubble_sort(list,(a,b)=>b.value.compareTo(a.value));
+    return list;
+  }
+
+  static List<String> getAfterRecommended(String articleName){ //推荐后继知识点
+    final q = findDescendants(articleName);
+    return q.toList().map((kp) => kp.name).toList();
+  }
 
 
-  static Future<List<String>> getArticleKeyWordsByName(String name) async{
-    final file=File("${_filePathPrefix}key_words/$name.txt");
-    try{
-      String contents=await file.readAsString();
-      return contents.split(" ");
-    }on FileSystemException catch (e) {
-      print("找不到 ${file.path}");
-      return [""];
+  //对树的节点的随机访问
+  // 已知图知识点图和已学知识点，随机采样一个未学知识点
+  static String? getRandomRecommended(MyTree<KnowledgePoint> tree,Iterable<String> allLearned,
+      {int choose = 0}){ //choose是选择的方法
+    final int numOfWay=2;
+    if(choose%numOfWay==0){//对全集随机访问
+
+      Set<String> set=allLearned.toSet();
+
+      final q=findDescendants(tree.root.value.name);
+
+      if(set.length+1<=q.length){ //如果树的总节点数 小于（说明有bug）等于（全学完了） 就返回空
+        return null;
+      }
+      final random=Random();
+      while(true){
+        String res=q[random.nextInt(q.length)]!.name;
+        if(!set.contains(res)){
+          return res;
+        }
+      }
+    }else{
+      //todo:添加随机访问方法
+    }
+
+  }
+
+  //随机推荐（根据学习时间，学习效果等）
+  String? getSuperRecommend(){
+    // Map<String> allLearned
+    //todo:根据相似程度，学习时间，难度等综合推荐
+  }
+
+
+
+  static Future<List<String>> getArticleKeyWordsByName(String name) async {
+    try {
+      final contents = await rootBundle.loadString('assets/key_words/$name.txt');
+      return contents.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    } catch (e) {
+      return [''];
     }
   }
 
   static Future<String> getArticleStringByName(String name) async {
-    final file=File("${_filePathPrefix}md/$name.md");
-    try{
-      String contents=await file.readAsString();
-      return contents;
-    }on FileSystemException catch (e) {
-      print("找不到 ${file.path}");
-      return "暂无文章";
+    try {
+      return await rootBundle.loadString('assets/md/$name.md');
+    } catch (e) {
+      return '暂无文章';
     }
   }
 

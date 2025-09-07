@@ -72,6 +72,19 @@ class MyQueue<T> {
   }
 
   void printAll() => print(toString());
+
+  T? operator [](int n){
+    if(n>=_length || n<0){
+      return null;
+    }
+    _Node<T> node=_front!;
+    int cnt=0;
+    while(cnt<n){
+      cnt++;
+      node=node.next!;
+    }
+    return node.data;
+  }
 }
 
 class _Node<T> {
