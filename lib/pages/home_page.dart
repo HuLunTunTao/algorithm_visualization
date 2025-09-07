@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:graphview/GraphView.dart';
+import 'package:graphview/GraphView.dart' hide Node;
 
 import '../graph_viz/graph_canvas.dart';
 import '../graph_viz/graph_controller.dart';
@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     final name = targetCtrl.text.trim();
     final q = pathPlan<KnowledgePoint>(tree, name);
     if (q == null) return;
-    final list = q.toList().cast<Node<KnowledgePoint>>();
+    final List<Node<KnowledgePoint>> list = q.toList();
     final learned = <String>{};
     for (final key in LearningStorage.box.keys) {
       if (LearningStorage.getCount(key) > 0) {

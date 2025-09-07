@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:graphview/GraphView.dart';
+import 'package:graphview/GraphView.dart' hide Node;
 
 import '../model/KnowledgePoint.dart';
 import '../struct/my_stack.dart';

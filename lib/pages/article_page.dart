@@ -46,7 +46,7 @@ class ArticlePage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                GptMarkdown(data: content),
+                GptMarkdown(content),
                 const SizedBox(height: 24),
                 if (rec.isNotEmpty) ...[
                   const Text('相关推荐：', style: TextStyle(fontSize: 16)),
