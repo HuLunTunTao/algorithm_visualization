@@ -1,6 +1,5 @@
 // 这个文件声明了文章类
-import 'dart:io';
-
+import 'package:flutter/services.dart';
 
 import '../algo/sort.dart';
 import 'KnowledgePoint.dart';
@@ -8,8 +7,7 @@ import 'KnowledgePoint.dart';
 class Article{
 
 
-  static final String _filePathPrefix="/Users/hltt/projects/llm_generate/";
-  static late List<KnowledgePoint> _knowledgeList=[];
+  static late List<KnowledgePoint> _knowledgeList = [];
 
   static final Map<String,List<String>> _keyWordsMap={};
   static final Map<String,String> _articleMap={};
@@ -21,11 +19,11 @@ class Article{
     _knowledgeList=list;
 
     for(final n in _knowledgeList){
-      final kw=getArticleKeyWordsByName(n.name);
-      final article=getArticleStringByName(n.name);
+      final kw = getArticleKeyWordsByName(n.name);
+      final article = getArticleStringByName(n.name);
 
-      _keyWordsMap[n.name]=await kw;
-      _articleMap[n.name]=await article;
+      _keyWordsMap[n.name] = await kw;
+      _articleMap[n.name] = await article;
 
       // print(await kw);
     }
@@ -71,27 +69,34 @@ class Article{
     return res;
   }
 
+  static List<MapEntry<String,double>> getRecommendedWithScores(String articleName){
+    if(jaccardMap[articleName]==null) Exception("不存在知识点为\"$articleName\"的文章");
+    List<MapEntry<String,double>> list=[];
+    for(final e in jaccardMap[articleName]!.entries.toList()){
+      if(e.value>0){
+        list.add(e);
+      }
+    }
+    SortAlgo.bubble_sort(list,(a,b)=>b.value.compareTo(a.value));
+    return list;
+  }
 
 
-  static Future<List<String>> getArticleKeyWordsByName(String name) async{
-    final file=File("${_filePathPrefix}key_words/$name.txt");
-    try{
-      String contents=await file.readAsString();
-      return contents.split(" ");
-    }on FileSystemException catch (e) {
-      print("找不到 ${file.path}");
-      return [""];
+
+  static Future<List<String>> getArticleKeyWordsByName(String name) async {
+    try {
+      final contents = await rootBundle.loadString('assets/key_words/$name.txt');
+      return contents.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    } catch (e) {
+      return [''];
     }
   }
 
   static Future<String> getArticleStringByName(String name) async {
-    final file=File("${_filePathPrefix}md/$name.md");
-    try{
-      String contents=await file.readAsString();
-      return contents;
-    }on FileSystemException catch (e) {
-      print("找不到 ${file.path}");
-      return "暂无文章";
+    try {
+      return await rootBundle.loadString('assets/md/$name.md');
+    } catch (e) {
+      return '暂无文章';
     }
   }
 
