@@ -29,21 +29,29 @@ class TopoView extends StatelessWidget {
       stack.pop();
       if (n != null) order.add(n);
     }
-    final ctrl = GraphController();
-    for (int i = 0; i < order.length; i++) {
-      final n = order[i];
-      ctrl.addNode(n.value.name, label: n.value.name);
-      ctrl.setVisitedOrder(n.value.name, i + 1);
-    }
-    for (int i = 0; i < order.length - 1; i++) {
-      ctrl.addEdge(order[i].value.name, order[i + 1].value.name, directed: true);
-    }
-    return GraphCanvas(
-      controller: ctrl,
-      layoutType: LayoutType.buchheim,
-      orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
-      canvasMinSize: const Size(2000, 1000),
-      defaultNodeSize: const Size(160, 80),
+
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("拓扑排序结果"),
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: DataTable(
+          headingRowColor: MaterialStateProperty.all(Colors.blue.shade50),
+          columns: const [
+            DataColumn(label: Text("序号")),
+            DataColumn(label: Text("知识点")),
+          ],
+          rows: List.generate(order.length, (index) {
+            final node = order[index];
+            return DataRow(cells: [
+              DataCell(Text("${index + 1}")),
+              DataCell(Text(node.value.name)),
+            ]);
+          }),
+        ),
+      ),
     );
   }
 }
