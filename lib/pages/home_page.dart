@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart' hide Node;
 
+import '../algo/mohu_final.dart';
 import '../graph_viz/graph_canvas.dart';
 import '../graph_viz/graph_controller.dart';
 import '../model/KnowledgePoint.dart';
@@ -432,10 +433,13 @@ class _HomePageState extends State<HomePage> {
                       if (value.text.isEmpty) {
                         return const Iterable<String>.empty();
                       }
-                      return KnowledgePointRepository
-                          .getAllKnowledgePoints()
-                          .map((e) => e.name)
-                          .where((name) => kmp(name, value.text) != -1);
+                      // return KnowledgePointRepository
+                      //     .getAllKnowledgePoints()
+                      //     .map((e) => e.name)
+                      //     .where((name) => kmp(name, value.text) != -1);
+                      // 优化为模糊搜索
+                      return FinalFuzzyMatcher.search(KnowledgePointRepository
+                               .getAllKnowledgePoints(), value.text).map((e)=>e.knowledgePoint.name);
                     },
                     onSelected: (selection) => targetCtrl.text = selection,
                     fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {

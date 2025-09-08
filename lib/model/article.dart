@@ -58,6 +58,49 @@ class Article{
     }
   }
 
+  static void calculateJaccardByInvertedMap(){
+    // 建立关键词到知识点名字的倒排Map
+    final invertedMap=<String,List<String>>{};
+
+    for(final e in keyWordsMap.entries) {
+      for (final keyWord in e.value) {
+        invertedMap[keyWord] ??= <String>[];
+        invertedMap[keyWord]!.add(e.key);
+      }
+    }
+
+    final Map<String,Map<String,int>> a={}; //a[i][j]表示i和j的交集数
+
+    for(final lst in invertedMap.values){
+      for(int i=0;i<lst.length;i++){
+        for(int j=i+1;j<lst.length;j++){
+          a[lst[i]]??={};
+          a[lst[j]]??={};
+          a[lst[i]]![lst[j]]??=0;
+          a[lst[j]]![lst[i]]??=0;
+          a[lst[i]]![lst[j]] = a[lst[i]]![lst[j]]! + 1;
+          a[lst[j]]![lst[i]] = a[lst[j]]![lst[i]]! + 1;
+        }
+      }
+    }
+
+    for(final e in a.entries.toList()){
+      for(final ea in e.value.entries.toList()){
+        final k0=e.key;
+        final k1=ea.key;
+
+        double jaccardSimilarity=ea.value/
+            (keyWordsMap[k0]!.length+keyWordsMap[k1]!.length-ea.value).toDouble();
+
+        jaccardMap[k0] ??= {};
+        jaccardMap[k1] ??= {};
+        jaccardMap[k0]![k1]=jaccardSimilarity;
+        jaccardMap[k1]![k0]=jaccardSimilarity;
+      }
+    }
+
+  }
+
   static List<String> getRecommendedArticleNames(String articleName){
     if(jaccardMap[articleName]==null) Exception("不存在知识点为\"$articleName\"的文章");
     List<String> res=[];
