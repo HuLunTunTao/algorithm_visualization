@@ -1,5 +1,5 @@
 import 'package:algorithm_visualization/model/KnowledgePoint.dart';
-import 'package:algorithm_visualization/struct/tree.dart';
+import 'package:algorithm_visualization/struct/my_graph.dart';
 
 // 假设的KMP函数，为了让测试文件可以运行
 int kmp(String text, String pattern) {
@@ -37,7 +37,7 @@ void main() {
     difficulty: rootPoint.difficulty,
     studyTime: rootPoint.studyTime,
   );
-  final myGraph = MyTree<KnowledgePoint>(rootNode);
+  final myGraph = MyGraph<KnowledgePoint>(rootNode);
   print('\n--- 根节点已创建 ---');
 
   // 2. 添加一个有单个父节点的节点（模拟树的行为）

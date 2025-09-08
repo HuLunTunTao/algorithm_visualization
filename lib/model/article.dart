@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../algo/afterknowledge.dart';
 import '../algo/sort.dart';
-import '../struct/tree.dart';
+import '../struct/my_graph.dart';
 import 'KnowledgePoint.dart';
 import '../algo/afterknowledge.dart';
 
@@ -94,7 +94,7 @@ class Article{
 
   //对树的节点的随机访问
   // 已知图知识点图和已学知识点，随机采样一个未学知识点
-  static String? getRandomRecommended(MyTree<KnowledgePoint> tree,Iterable<String> allLearned,
+  static String? getRandomRecommended(MyGraph<KnowledgePoint> tree,Iterable<String> allLearned,
       {int choose = 0}){ //choose是选择的方法
     final int numOfWay=2;
     if(choose%numOfWay==0){//对全集随机访问
@@ -120,9 +120,12 @@ class Article{
   }
 
   //随机推荐（根据学习时间，学习效果等）
-  String? getSuperRecommend(){
-    // Map<String> allLearned
-    //todo:根据相似程度，学习时间，难度等综合推荐
+  String? getSuperRecommend(Iterable<String> allLearned){
+
+    Set<KnowledgePoint> set={};
+    for(final e in allLearned){
+
+    }
   }
 
 

@@ -1,4 +1,4 @@
-import '../struct/tree.dart';
+import '../struct/my_graph.dart';
 
 class AlgorithmProblem {
   final String name;

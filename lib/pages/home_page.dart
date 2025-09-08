@@ -12,7 +12,7 @@ import '../utils/constants.dart';
 import '../algo/guide_learningway.dart';
 import '../algo/tree_kmp.dart';
 import '../struct/my_queue.dart';
-import '../struct/tree.dart';
+import '../struct/my_graph.dart';
 import 'article_view.dart';
 import 'topo_view.dart';
 import 'package:toastification/toastification.dart';
@@ -28,7 +28,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final GraphController ctrl = GraphController();
-  late final MyTree<KnowledgePoint> tree;
+  late final MyGraph<KnowledgePoint> tree;
   String? selected;
   final targetCtrl = TextEditingController();
   final problemCtrl = TextEditingController();
@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
     }
     final q = pathPlan<KnowledgePoint>(tree, name);
     if (q == null) return;
-    final List<Node<KnowledgePoint>> list = q.toList();
+    final List<MyGraphNode<KnowledgePoint>> list = q.toList();
     final List<String> res = [];
     for (final n in list) {
       if (LearningStorage.getCount(n.value.name) == 0) {

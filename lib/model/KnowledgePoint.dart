@@ -1,4 +1,4 @@
-import '../struct/tree.dart';
+import '../struct/my_graph.dart';
 
 class KnowledgePoint {
   final String name; // 知识点名称（中文字符串，同时作为唯一标识）

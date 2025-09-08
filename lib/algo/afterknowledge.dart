@@ -1,4 +1,4 @@
-import '../struct/tree.dart';
+import '../struct/my_graph.dart';
 import '../model/KnowledgePoint.dart';
 import '../struct/my_queue.dart';
 

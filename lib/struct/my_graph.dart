@@ -7,16 +7,16 @@ import '../model/KnowledgePoint.dart';
 //9.6大改动，由于修改了树结构，现在整体改为图实现功能
 
 // Node的对外接口
-abstract class Node<T extends KnowledgePoint> 
+abstract class MyGraphNode<T extends KnowledgePoint>
 {
   //为了方便外部功能调用，全打开吧
   T get value;
-  List<Node<T>>? get parents;
-  List<Node<T>>? get children;
+  List<MyGraphNode<T>>? get parents;
+  List<MyGraphNode<T>>? get children;
 }
 
 //核心私有Node
-class _Node<T extends KnowledgePoint> implements Node<T> 
+class _Node<T extends KnowledgePoint> implements MyGraphNode<T>
 {
   @override
   late T value;
@@ -33,20 +33,20 @@ class _Node<T extends KnowledgePoint> implements Node<T>
     
 }
 
-// 外部类MyTree，提供公共接口
-class MyTree<T extends KnowledgePoint> 
+// MyGraph，提供公共接口
+class MyGraph<T extends KnowledgePoint>
 {
   final _Node<T> _root;
 
   //创建树的构造函数
-  MyTree(T rootValue)
+  MyGraph(T rootValue)
       : _root=_Node<T>(rootValue, []);
 
   //提供对根节点的访问
-  Node<T> get root=>_root;
+  MyGraphNode<T> get root=>_root;
 
   //添加节点函数
-  Node<T> addNode(T value,List<Node<T>> parents) 
+  MyGraphNode<T> addNode(T value,List<MyGraphNode<T>> parents)
   {
     //这来个Map方式把所有父列表中节点全部转换为_Node,公有转私有
     final typedParents=parents.map((p)=>p as _Node<T>).toList();
@@ -73,7 +73,7 @@ class MyTree<T extends KnowledgePoint>
   // }
 
   //DFS打印函数,由于是图了，引入一个集合来存储访问过的节点
-  void dfsPrint(Node<T>? node,[Set<_Node<T>>? visited]) 
+  void dfsPrint(MyGraphNode<T>? node,[Set<_Node<T>>? visited])
   {
     final typedNode=node as _Node<T>?;
     if (typedNode == null || (visited ??= <_Node<T>>{}).contains(typedNode)) 
@@ -91,7 +91,7 @@ class MyTree<T extends KnowledgePoint>
   }
 
   // 连带子节点的删除
-  void deleteNode_withoutson(Node<T> node) 
+  void deleteNode_withoutson(MyGraphNode<T> node)
   {
     final typedNode = node as _Node<T>;
     if (typedNode.parents.isEmpty) 
@@ -107,7 +107,7 @@ class MyTree<T extends KnowledgePoint>
   }
 
   //保留子节点的删除
-  void deleteNode_withson(Node<T> node) 
+  void deleteNode_withson(MyGraphNode<T> node)
   {
     final typedNode = node as _Node<T>;
     if (typedNode.parents.isEmpty) 
@@ -147,7 +147,7 @@ class MyTree<T extends KnowledgePoint>
   // }
 
   //DFS搜索
-  Node<T>? dfsFind(Node<T>? node, String sname,[Set<_Node<T>>? visited]) 
+  MyGraphNode<T>? dfsFind(MyGraphNode<T>? node, String sname,[Set<_Node<T>>? visited])
   {
     final typedNode = node as _Node<T>?;
     if (typedNode == null || (visited ??= <_Node<T>>{}).contains(typedNode)) 
@@ -162,7 +162,7 @@ class MyTree<T extends KnowledgePoint>
     for (int i=0;i<typedNode.children.length;i++) 
     {
       _Node<T> child = typedNode.children[i];
-      Node<T>? result = dfsFind(child, sname,visited);
+      MyGraphNode<T>? result = dfsFind(child, sname,visited);
       if (result!=null) return result;
     }
     return null;

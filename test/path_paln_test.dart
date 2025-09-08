@@ -1,13 +1,13 @@
 
 import 'dart:io';
 
-import 'package:algorithm_visualization/struct/tree.dart';
+import 'package:algorithm_visualization/struct/my_graph.dart';
 import 'package:algorithm_visualization/model/KnowledgePoint.dart';
 import 'package:algorithm_visualization/algo/guide_learningway.dart';
 import 'package:algorithm_visualization/struct/my_queue.dart';
 
 // 辅助函数：将学习路径队列转换为列表，方便验证
-List<String> getPathAsList(MyQueue<Node<KnowledgePoint>>? pathQueue) {
+List<String> getPathAsList(MyQueue<MyGraphNode<KnowledgePoint>>? pathQueue) {
   final pathList = <String>[];
   if (pathQueue == null) {
     return pathList;
@@ -37,7 +37,7 @@ void main() {
   // 1. 构建知识图
   // 按照只有一个根节点的实际情况构建图
   final rootKnowledge = transform(KnowledgePointRepository.getKnowledgePointByName('时间复杂度') as KnowledgePoint);
-  final tree = MyTree<KnowledgePoint>(rootKnowledge);
+  final tree = MyGraph<KnowledgePoint>(rootKnowledge);
 
   // 添加一系列知识点，模拟实际的依赖关系，所有节点都连接到唯一的根节点
   final spaceComplexity = transform(KnowledgePointRepository.getKnowledgePointByName('空间复杂度') as KnowledgePoint);

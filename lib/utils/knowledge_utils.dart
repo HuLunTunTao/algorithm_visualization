@@ -1,11 +1,11 @@
 import '../model/KnowledgePoint.dart';
-import '../struct/tree.dart';
+import '../struct/my_graph.dart';
 
-MyTree<KnowledgePoint> buildKnowledgeTree() {
+MyGraph<KnowledgePoint> buildKnowledgeTree() {
   final points = KnowledgePointRepository.getAllKnowledgePoints();
   final rootKP = points.firstWhere((kp) => kp.prerequisites.isEmpty);
-  final tree = MyTree<KnowledgePoint>(rootKP);
-  final Map<String, Node<KnowledgePoint>> nodeMap = {rootKP.name: tree.root};
+  final tree = MyGraph<KnowledgePoint>(rootKP);
+  final Map<String, MyGraphNode<KnowledgePoint>> nodeMap = {rootKP.name: tree.root};
 
   bool added = true;
   while (added) {
@@ -22,9 +22,9 @@ MyTree<KnowledgePoint> buildKnowledgeTree() {
   return tree;
 }
 
-Set<Node<KnowledgePoint>> collectAllNodes(Node<KnowledgePoint> root) {
-  final visited = <Node<KnowledgePoint>>{};
-  void dfs(Node<KnowledgePoint> node) {
+Set<MyGraphNode<KnowledgePoint>> collectAllNodes(MyGraphNode<KnowledgePoint> root) {
+  final visited = <MyGraphNode<KnowledgePoint>>{};
+  void dfs(MyGraphNode<KnowledgePoint> node) {
     if (visited.contains(node)) return;
     visited.add(node);
     final children = node.children ?? [];
@@ -36,6 +36,6 @@ Set<Node<KnowledgePoint>> collectAllNodes(Node<KnowledgePoint> root) {
   return visited;
 }
 
-Iterable<Node<KnowledgePoint>> findRoots(Set<Node<KnowledgePoint>> nodes) {
+Iterable<MyGraphNode<KnowledgePoint>> findRoots(Set<MyGraphNode<KnowledgePoint>> nodes) {
   return nodes.where((n) => n.parents == null || n.parents!.isEmpty);
 }

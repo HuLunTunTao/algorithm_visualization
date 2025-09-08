@@ -3,7 +3,7 @@ import 'package:graphview/GraphView.dart' hide Node;
 
 import '../model/KnowledgePoint.dart';
 import '../struct/my_stack.dart';
-import '../struct/tree.dart';
+import '../struct/my_graph.dart';
 import '../algo/guide_learningway.dart';
 import '../graph_viz/graph_canvas.dart';
 import '../graph_viz/graph_controller.dart';
@@ -12,18 +12,18 @@ import '../utils/knowledge_utils.dart';
 class TopoView extends StatelessWidget {
   const TopoView({super.key, required this.tree});
 
-  final MyTree<KnowledgePoint> tree;
+  final MyGraph<KnowledgePoint> tree;
 
   @override
   Widget build(BuildContext context) {
     final nodes = collectAllNodes(tree.root);
-    final visited = <Node<KnowledgePoint>>{};
-    final stack = MyStack<Node<KnowledgePoint>>();
+    final visited = <MyGraphNode<KnowledgePoint>>{};
+    final stack = MyStack<MyGraphNode<KnowledgePoint>>();
     final roots = findRoots(nodes);
     for (final r in roots) {
       tuopu_DFS<KnowledgePoint>(r, visited, nodes, stack);
     }
-    final order = <Node<KnowledgePoint>>[];
+    final order = <MyGraphNode<KnowledgePoint>>[];
     while (!stack.isEmpty()) {
       final n = stack.top();
       stack.pop();
