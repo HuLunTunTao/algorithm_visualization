@@ -303,7 +303,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('算法学习助手'),
+        title: const Text('算法可视化学习平台',style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.blueAccent,
       ),
       body: Row(
@@ -366,7 +366,7 @@ class _HomePageState extends State<HomePage> {
                         setState(() {});
                         _toast('已增加学习次数');
                       },
-                      child: const Text('+1'),
+                      child: const Text('学习次数+1'),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
@@ -398,11 +398,11 @@ class _HomePageState extends State<HomePage> {
                       child: Text(view == MainView.article ? '返回图谱' : '查看文档'),
                     ),
                     const SizedBox(width: 8),
-                    ElevatedButton(
-                      style: _btnStyle,
-                      onPressed: () => _markLearned(sel),
-                      child: const Text('已学习'),
-                    ),
+                    // ElevatedButton(
+                    //   style: _btnStyle,
+                    //   onPressed: () => _markLearned(sel),
+                    //   child: const Text('已学习'),
+                    // ),
                   ],
                 ),
               ],
