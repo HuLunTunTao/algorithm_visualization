@@ -3,8 +3,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../struct/my_queue.dart';
 
 class LearningStorage {
-  static late Box<int> box;
-  static late Box<List> pathBox;
+  static late Box<int> box;//学习次数计数
+  static late Box<List> pathBox;//学习路径
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -25,18 +25,18 @@ class LearningStorage {
     await box.put(name, 0);
   }
 
-  /// Clear all persisted learning data including counts and planned path.
+  //清空已学习记录和路径规划
   static Future<void> clearAll() async {
     await box.clear();
     await pathBox.clear();
   }
 
-  /// Names of knowledge points that have been learned at least once.
+  // 获取至少学了一次的知识点的名字的列表
   static List<String> getLearnedNames(Iterable<String> allNames) {
     return allNames.where((n) => (box.get(n, defaultValue: 0) ?? 0) > 0).toList();
   }
 
-  // ------- Learning Path Queue -------
+  //学习路径 队列
 
   static MyQueue<String> getPathQueue() {
     final list = List<String>.from(pathBox.get('path', defaultValue: const []) ?? const []);
