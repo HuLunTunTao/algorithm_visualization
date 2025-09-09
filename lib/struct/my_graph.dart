@@ -150,7 +150,7 @@ class MyGraph<T extends KnowledgePoint>
   MyGraphNode<T>? dfsFind(MyGraphNode<T>? node, String sname,[Set<_Node<T>>? visited])
   {
     final typedNode = node as _Node<T>?;
-    if (typedNode == null || (visited ??= <_Node<T>>{}).contains(typedNode)) 
+    if (typedNode == null || (visited ??= <_Node<T>>{}).contains(typedNode))  //如果结点为空或已经到达子节点
     {
       return null;
     }
