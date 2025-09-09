@@ -383,10 +383,13 @@ class KnowledgePointRepository {
   }
 
   // 根据名称获取知识点
-  static KnowledgePoint? getKnowledgePointByName(String name) {
-    try {
+  static KnowledgePoint? getKnowledgePointByName(String name) 
+  {
+    try 
+    {
       return _allKnowledgePoints.firstWhere((kp) => kp.name == name);
-    } catch (e) {
+    } catch (e) 
+    {
       return null;
     }
   }
