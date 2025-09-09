@@ -81,4 +81,5 @@ MyQueue<KnowledgePoint> findDescendants(String knowledgePointName) {
   }
 
   return resultQueue;
+  
 }
