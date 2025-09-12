@@ -155,7 +155,9 @@ class _HomePageState extends State<HomePage>
   void _selectFromPath(String name) {
     setState(() {
       selected = name;
+      targetCtrl.text = name;
     });
+    _tabController.animateTo(0);
     _toast('已选择 $name');
   }
 
@@ -487,110 +489,136 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildPathTab() {
     final queueList = queue.toList();
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('学习路径规划'),
-                  Autocomplete<String>(
-                    optionsBuilder: (value) {
-                      if (value.text.isEmpty) {
-                        return const Iterable<String>.empty();
-                      }
-                      // return KnowledgePointRepository
-                      //     .getAllKnowledgePoints()
-                      //     .map((e) => e.name)
-                      //     .where((name) => kmp(name, value.text) != -1);
-                      // 优化为模糊搜索
-                      return FinalFuzzyMatcher.search(KnowledgePointRepository
-                               .getAllKnowledgePoints(), value.text).map((e)=>e.knowledgePoint.name);
-                    },
-                    onSelected: (selection) => targetCtrl.text = selection,
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      controller.text = targetCtrl.text;
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        decoration: const InputDecoration(labelText: '目标知识点'),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    style: _btnStyle,
-                    onPressed: _planPath,
-                    child: const Text('规划路径'),
-                  ),
-                  if (pathResult.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 4,
-                      children: pathResult
-                          .map((e) => Chip(
-                        label: Text(e),
-                        backgroundColor: Colors.lightBlueAccent,
-                      ))
-                          .toList(),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade50, Colors.purple.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Card(
+              color: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('学习路径规划',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Autocomplete<String>(
+                      optionsBuilder: (value) {
+                        if (value.text.isEmpty) {
+                          return const Iterable<String>.empty();
+                        }
+                        // 优化为模糊搜索
+                        return FinalFuzzyMatcher.search(
+                                KnowledgePointRepository.getAllKnowledgePoints(),
+                                value.text)
+                            .map((e) => e.knowledgePoint.name);
+                      },
+                      onSelected: (selection) => targetCtrl.text = selection,
+                      fieldViewBuilder:
+                          (context, controller, focusNode, onEditingComplete) {
+                        controller.text = targetCtrl.text;
+                        return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          onEditingComplete: onEditingComplete,
+                          decoration:
+                              const InputDecoration(labelText: '目标知识点'),
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
                       style: _btnStyle,
-                      onPressed: _updateQueue,
-                      child: const Text('更新学习路径'),
+                      onPressed: _planPath,
+                      child: const Text('规划路径'),
                     ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('当前学习路径'),
-                      TextButton(onPressed: _clearQueue, child: const Text('清空')),
-                    ],
-                  ),
-                  if (queueList.isEmpty)
-                    const Text('暂无规划'),
-                  for (int i = 0; i < queueList.length; i++)
-                    ListTile(
-                      title: Text(queueList[i]),
-                      leading: i == 0 ? const Icon(Icons.flag) : null,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.play_arrow),
-                            onPressed: () => _selectFromPath(queueList[i]),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.check),
-                            onPressed: () => _markLearned(queueList[i]),
-                          ),
-                        ],
+                    if (pathResult.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 4,
+                        children: pathResult
+                            .map((e) => Chip(
+                                  label: Text(e),
+                                  backgroundColor: Colors.lightBlueAccent,
+                                ))
+                            .toList(),
                       ),
-                    ),
-                ],
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        style: _btnStyle,
+                        onPressed: _updateQueue,
+                        child: const Text('更新学习路径'),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Card(
+              color: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('当前学习路径',
+                            style:
+                                TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        TextButton(onPressed: _clearQueue, child: const Text('清空')),
+                      ],
+                    ),
+                    if (queueList.isEmpty)
+                      const Text('暂无规划'),
+                    for (int i = 0; i < queueList.length; i++)
+                      Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        color: Colors.orange.shade50,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.deepPurple,
+                            child: Text('${i + 1}',
+                                style: const TextStyle(color: Colors.white)),
+                          ),
+                          title: Text(queueList[i]),
+                          trailing: Wrap(
+                            spacing: 4,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.play_arrow, color: Colors.blue),
+                                onPressed: () => _selectFromPath(queueList[i]),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.check, color: Colors.green),
+                                onPressed: () => _markLearned(queueList[i]),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
