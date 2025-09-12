@@ -85,21 +85,57 @@ class _HomePageState extends State<HomePage>
   void _onNodeTap(String id) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('选择知识点'),
-        content: Text('是否将"$id"设为当前知识点?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                selected = id;
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('确定'),
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.purple.shade200, Colors.blue.shade200],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('选择知识点',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
+                const SizedBox(height: 8),
+                Text('是否将"$id"设为当前知识点?',
+                    style: const TextStyle(color: Colors.white)),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(foregroundColor: Colors.white),
+                      child: const Text('取消'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          selected = id;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style:
+                          TextButton.styleFrom(foregroundColor: Colors.white),
+                      child: const Text('确定'),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -167,7 +203,7 @@ class _HomePageState extends State<HomePage>
       type: type,
       title: Text(msg),
       autoCloseDuration: kToastDuration,
-
+      animationDuration: kToastDuration,
     );
   }
 
@@ -335,13 +371,22 @@ class _HomePageState extends State<HomePage>
   Widget _buildMain() {
     switch (view) {
       case MainView.graph:
-        return GraphCanvas(
-          controller: ctrl,
-          layoutType: LayoutType.fruchterman,
-          orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
-          canvasMinSize: const Size(5000, 5000),
-          defaultNodeSize: const Size(160, 80),
-          onNodeTap: _onNodeTap,
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade50, Colors.purple.shade50],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: GraphCanvas(
+            controller: ctrl,
+            layoutType: LayoutType.fruchterman,
+            orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
+            canvasMinSize: const Size(5000, 5000),
+            defaultNodeSize: const Size(160, 80),
+            onNodeTap: _onNodeTap,
+          ),
         );
       case MainView.article:
         return ArticleView(
@@ -378,8 +423,20 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('算法可视化学习平台',style: TextStyle(color: Colors.white),),
-        backgroundColor: Colors.blueAccent,
+        title: const Text('算法可视化学习平台',
+            style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        elevation: 4,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.indigo, Colors.pinkAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: Row(
         children: [
@@ -419,64 +476,78 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildLearningTab() {
     final sel = selected;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(8),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('当前知识点: ${sel ?? '未选择'}'),
-              if (sel != null) ...[
-                Text('学习次数: ${LearningStorage.getCount(sel)}'),
-                const SizedBox(height: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ElevatedButton.icon(
-                      style: _btnStyle,
-                      onPressed: () async {
-                        await LearningStorage.increment(sel);
-                        setState(() {});
-                        _toast('已增加学习次数');
-                      },
-                      icon: const Icon(Icons.add_circle_outline),
-                      label: const Text('学习次数+1'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      style: _btnStyle,
-                      onPressed: () async {
-                        await LearningStorage.reset(sel);
-                        setState(() {});
-                        _toast('已清空学习次数');
-                      },
-                      icon: const Icon(Icons.delete_outline),
-                      label: const Text('清空'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      style: _btnStyle,
-                      onPressed: () {
-                        if (view == MainView.article) {
-                          setState(() => view = MainView.graph);
-                        } else {
-                          setState(() {
-                            articleName = sel;
-                            view = MainView.article;
-                          });
-                        }
-                      },
-                      icon: Icon(
-                          view == MainView.article ? Icons.arrow_back : Icons.menu_book_outlined),
-                      label: Text(view == MainView.article ? '返回图谱' : '查看文档'),
-                    ),
-                  ],
-                ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.pink.shade50, Colors.orange.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
+        child: Card(
+          color: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('当前知识点: ${sel ?? '未选择'}'),
+                if (sel != null) ...[
+                  const SizedBox(height: 8),
+                  Text('学习次数: ${LearningStorage.getCount(sel)}'),
+                  const SizedBox(height: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ElevatedButton.icon(
+                        style: _btnStyle,
+                        onPressed: () async {
+                          await LearningStorage.increment(sel);
+                          setState(() {});
+                          _toast('已增加学习次数');
+                        },
+                        icon: const Icon(Icons.add_circle_outline),
+                        label: const Text('学习次数+1'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        style: _btnStyle,
+                        onPressed: () async {
+                          await LearningStorage.reset(sel);
+                          setState(() {});
+                          _toast('已清空学习次数');
+                        },
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('清空'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        style: _btnStyle,
+                        onPressed: () {
+                          if (view == MainView.article) {
+                            setState(() => view = MainView.graph);
+                          } else {
+                            setState(() {
+                              articleName = sel;
+                              view = MainView.article;
+                            });
+                          }
+                        },
+                        icon: Icon(view == MainView.article
+                            ? Icons.arrow_back
+                            : Icons.menu_book_outlined),
+                        label: Text(
+                            view == MainView.article ? '返回图谱' : '查看文档'),
+                      ),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -620,114 +691,151 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildToolsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('问题查询'),
-                  Autocomplete<String>(
-                    optionsBuilder: (value) {
-                      if (value.text.isEmpty) {
-                        return const Iterable<String>.empty();
-                      }
-                      final query = value.text;
-                      final exactMatches = algorithmProblems
-                          .where((p) => kmp(p.name, query) != -1)
-                          .map((p) => p.name)
-                          .toList();
-                      final tagMatches = algorithmProblems
-                          .where((p) =>
-                          p.tags.any((tag) => kmp(tag, query) != -1))
-                          .map((p) => p.name)
-                          .where((name) => !exactMatches.contains(name))
-                          .toList();
-                      return [...exactMatches, ...tagMatches];
-                    },
-                    onSelected: (selection) {
-                      problemCtrl.text = selection;
-                      _showProblem(selection);
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      controller.text = problemCtrl.text;
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        decoration: const InputDecoration(labelText: '问题'),
-                      );
-                    },
-                  ),
-                ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.teal.shade50, Colors.lightBlue.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Card(
+              color: Colors.white,
+              elevation: 4,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('问题查询'),
+                    Autocomplete<String>(
+                      optionsBuilder: (value) {
+                        if (value.text.isEmpty) {
+                          return const Iterable<String>.empty();
+                        }
+                        final query = value.text;
+                        final exactMatches = algorithmProblems
+                            .where((p) => kmp(p.name, query) != -1)
+                            .map((p) => p.name)
+                            .toList();
+                        final tagMatches = algorithmProblems
+                            .where((p) =>
+                                p.tags.any((tag) => kmp(tag, query) != -1))
+                            .map((p) => p.name)
+                            .where((name) => !exactMatches.contains(name))
+                            .toList();
+                        return [...exactMatches, ...tagMatches];
+                      },
+                      onSelected: (selection) {
+                        problemCtrl.text = selection;
+                        _showProblem(selection);
+                      },
+                      fieldViewBuilder: (context, controller, focusNode,
+                          onEditingComplete) {
+                        controller.text = problemCtrl.text;
+                        return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          onEditingComplete: onEditingComplete,
+                          decoration: const InputDecoration(labelText: '问题'),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              title: const Text('拓扑排序'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => setState(() => view = MainView.topo),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('已学习知识点'),
-                      TextButton(onPressed: _clearAllData, child: const Text('清空数据')),
-                    ],
-                  ),
-                  Wrap(
-                    spacing: 4,
-                    children: _learnedNames().map((e) => Chip(label: Text(e))).toList(),
-                  ),
-                ],
+            const SizedBox(height: 8),
+            Card(
+              color: Colors.white,
+              elevation: 4,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: ListTile(
+                title: const Text('拓扑排序'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => setState(() => view = MainView.topo),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Card(
+              color: Colors.white,
+              elevation: 4,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('已学习知识点'),
+                        TextButton(
+                            onPressed: _clearAllData,
+                            child: const Text('清空数据')),
+                      ],
+                    ),
+                    Wrap(
+                      spacing: 4,
+                      children: _learnedNames()
+                          .map((e) => Chip(label: Text(e)))
+                          .toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSettingsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(8),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('已学习知识点'),
-                  TextButton(onPressed: _clearAllData, child: const Text('清空数据')),
-                ],
-              ),
-              Wrap(
-                spacing: 4,
-                children: _learnedNames()
-                    .map((e) => Chip(label: Text(e), backgroundColor: Colors.greenAccent))
-                    .toList(),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.purple.shade50, Colors.indigo.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
+        child: Card(
+          color: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('已学习知识点'),
+                    TextButton(
+                        onPressed: _clearAllData, child: const Text('清空数据')),
+                  ],
+                ),
+                Wrap(
+                  spacing: 4,
+                  children: _learnedNames()
+                      .map((e) =>
+                          Chip(label: Text(e), backgroundColor: Colors.greenAccent))
+                      .toList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
