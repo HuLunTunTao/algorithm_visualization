@@ -17,6 +17,7 @@ import '../struct/my_graph.dart';
 import 'article_view.dart';
 import 'topo_view.dart';
 import 'package:toastification/toastification.dart';
+import '../algo/problem_recommend.dart';
 
 enum MainView { graph, article, topo, problem }
 
@@ -211,27 +212,89 @@ class _HomePageState extends State<HomePage> {
       pCtrl.addNode(kp, label: kp, color: learned ? Colors.green : Colors.blue);
       pCtrl.addEdge(prob.name, kp, directed: true);
     });
-    return Stack(
+
+    final learned = _learnedNames();
+    final recs =
+        ProblemPathRecommender.recommendLearningPaths(prob.name, learned);
+
+    final table = recs.isEmpty
+        ? const Center(child: Text('暂无推荐路径'))
+        : DataTable(
+            headingRowColor: MaterialStateProperty.all(Colors.blueAccent),
+            headingTextStyle: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
+            dataRowColor: MaterialStateProperty.resolveWith((states) {
+              if (states.contains(MaterialState.selected)) {
+                return Colors.lightGreenAccent.withOpacity(0.3);
+              }
+              return Colors.blue.shade50;
+            }),
+            columns: const [
+              DataColumn(label: Text('方案')),
+              DataColumn(label: Text('学习路径')),
+              DataColumn(label: Text('步骤')),
+              DataColumn(label: Text('总难度')),
+              DataColumn(label: Text('学习时间')),
+              DataColumn(label: Text('相似度')),
+              DataColumn(label: Text('综合评分')),
+            ],
+            rows: List.generate(recs.length, (i) {
+              final r = recs[i];
+              final kp = r['solution_knowledge'] as KnowledgePoint;
+              final path = (r['path'] as List<KnowledgePoint>)
+                  .map((e) => e.name)
+                  .join(' → ');
+              return DataRow(
+                selected: i == 0,
+                cells: [
+                  DataCell(Text(kp.name)),
+                  DataCell(Text(path)),
+                  DataCell(Text('${r['steps_count']}')),
+                  DataCell(Text('${r['total_difficulty']}')),
+                  DataCell(Text('${r['total_study_time']}')),
+                  DataCell(Text('${r['similarity_score']}')),
+                  DataCell(Text(r['total_score'].toStringAsFixed(2))),
+                ],
+              );
+            }),
+          );
+
+    return Column(
       children: [
-        GraphCanvas(
-          controller: pCtrl,
-          layoutType: LayoutType.fruchterman,
-          orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
-          canvasMinSize: const Size(1000, 1000),
-          defaultNodeSize: const Size(160, 80),
-          onNodeTap: _onProblemNodeTap,
+        Expanded(
+          child: Stack(
+            children: [
+              GraphCanvas(
+                controller: pCtrl,
+                layoutType: LayoutType.fruchterman,
+                orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
+                canvasMinSize: const Size(1000, 1000),
+                defaultNodeSize: const Size(160, 80),
+                onNodeTap: _onProblemNodeTap,
+              ),
+              Positioned(
+                top: 16,
+                left: 16,
+                child: ElevatedButton(
+                  style: _btnStyle,
+                  onPressed: () => setState(() => view = MainView.graph),
+                  child: const Text('返回'),
+                ),
+              ),
+            ],
+          ),
         ),
-        Positioned(
-          top: 16,
-          left: 16,
-          child: ElevatedButton(
-            style: _btnStyle,
-            onPressed: () => setState(() => view = MainView.graph),
-            child: const Text('返回'),
+        Card(
+          margin: const EdgeInsets.all(16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 4,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: table,
           ),
         ),
       ],
-
     );
   }
 
