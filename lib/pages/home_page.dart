@@ -28,7 +28,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   final GraphController ctrl = GraphController();
   late final MyGraph<KnowledgePoint> tree;
   String? selected;
@@ -39,6 +40,7 @@ class _HomePageState extends State<HomePage> {
   MainView view = MainView.graph;
   String? articleName;
   String? problemName;
+  late final TabController _tabController;
 
   final ButtonStyle _btnStyle = ElevatedButton.styleFrom(
     backgroundColor: Colors.orange,
@@ -52,8 +54,15 @@ class _HomePageState extends State<HomePage> {
     tree = buildKnowledgeTree();
     _buildGraph();
     queue = LearningStorage.getPathQueue();
+    _tabController = TabController(length: 4, vsync: this);
     Article.initArticleClass(KnowledgePointRepository.getAllKnowledgePoints())
         .then((_) => Article.calculateJaccard());
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _buildGraph() {
@@ -196,7 +205,7 @@ class _HomePageState extends State<HomePage> {
       selected = id;
       targetCtrl.text = id;
     });
-    DefaultTabController.of(context)?.animateTo(1);
+    _tabController.animateTo(1);
     _toast('已选择 $id');
   }
 
@@ -380,30 +389,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSide() {
-    return DefaultTabController(
-      length: 4,
-      child: Column(
-        children: [
-          const TabBar(
-            tabs: [
-              Tab(text: '学习'),
-              Tab(text: '路径'),
-              Tab(text: '工具'),
-              Tab(text: '设置'),
+    return Column(
+      children: [
+        TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '学习'),
+            Tab(text: '路径'),
+            Tab(text: '工具'),
+            Tab(text: '设置'),
+          ],
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildLearningTab(),
+              _buildPathTab(),
+              _buildToolsTab(),
+              _buildSettingsTab(),
             ],
           ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _buildLearningTab(),
-                _buildPathTab(),
-                _buildToolsTab(),
-                _buildSettingsTab(),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
