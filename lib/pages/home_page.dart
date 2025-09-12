@@ -230,6 +230,23 @@ class _HomePageState extends State<HomePage>
     return LearningStorage.getLearnedNames(names);
   }
 
+  Widget _buildLearnedChips() {
+    final names = _learnedNames();
+    if (names.isEmpty) {
+      return const Text('暂无数据');
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: names
+          .map((e) => Chip(
+                label: Text(e),
+                backgroundColor: Colors.green.shade100,
+              ))
+          .toList(),
+    );
+  }
+
   void _showProblem(String name) {
     setState(() {
       problemName = name;
@@ -427,16 +444,7 @@ class _HomePageState extends State<HomePage>
             style: TextStyle(color: Colors.white)),
         centerTitle: true,
         elevation: 4,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.indigo, Colors.pinkAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        backgroundColor: Colors.indigo,
       ),
       body: Row(
         children: [
@@ -490,64 +498,84 @@ class _HomePageState extends State<HomePage>
           color: Colors.white,
           elevation: 4,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('当前知识点: ${sel ?? '未选择'}'),
-                if (sel != null) ...[
-                  const SizedBox(height: 8),
-                  Text('学习次数: ${LearningStorage.getCount(sel)}'),
-                  const SizedBox(height: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ElevatedButton.icon(
-                        style: _btnStyle,
-                        onPressed: () async {
-                          await LearningStorage.increment(sel);
-                          setState(() {});
-                          _toast('已增加学习次数');
-                        },
-                        icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('学习次数+1'),
-                      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.orange, Colors.pinkAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: const Text('学习面板',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('当前知识点: ${sel ?? '未选择'}'),
+                    if (sel != null) ...[
                       const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        style: _btnStyle,
-                        onPressed: () async {
-                          await LearningStorage.reset(sel);
-                          setState(() {});
-                          _toast('已清空学习次数');
-                        },
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('清空'),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        style: _btnStyle,
-                        onPressed: () {
-                          if (view == MainView.article) {
-                            setState(() => view = MainView.graph);
-                          } else {
-                            setState(() {
-                              articleName = sel;
-                              view = MainView.article;
-                            });
-                          }
-                        },
-                        icon: Icon(view == MainView.article
-                            ? Icons.arrow_back
-                            : Icons.menu_book_outlined),
-                        label: Text(
-                            view == MainView.article ? '返回图谱' : '查看文档'),
+                      Text('学习次数: ${LearningStorage.getCount(sel)}'),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            style: _btnStyle,
+                            onPressed: () async {
+                              await LearningStorage.increment(sel);
+                              setState(() {});
+                              _toast('已增加学习次数');
+                            },
+                            icon: const Icon(Icons.add_circle_outline),
+                            label: const Text('学习次数+1'),
+                          ),
+                          ElevatedButton.icon(
+                            style: _btnStyle,
+                            onPressed: () async {
+                              await LearningStorage.reset(sel);
+                              setState(() {});
+                              _toast('已清空学习次数');
+                            },
+                            icon: const Icon(Icons.delete_outline),
+                            label: const Text('清空'),
+                          ),
+                          ElevatedButton.icon(
+                            style: _btnStyle,
+                            onPressed: () {
+                              if (view == MainView.article) {
+                                setState(() => view = MainView.graph);
+                              } else {
+                                setState(() {
+                                  articleName = sel;
+                                  view = MainView.article;
+                                });
+                              }
+                            },
+                            icon: Icon(view == MainView.article
+                                ? Icons.arrow_back
+                                : Icons.menu_book_outlined),
+                            label: Text(view == MainView.article
+                                ? '返回图谱'
+                                : '查看文档'),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -783,12 +811,7 @@ class _HomePageState extends State<HomePage>
                             child: const Text('清空数据')),
                       ],
                     ),
-                    Wrap(
-                      spacing: 4,
-                      children: _learnedNames()
-                          .map((e) => Chip(label: Text(e)))
-                          .toList(),
-                    ),
+                    _buildLearnedChips(),
                   ],
                 ),
               ),
@@ -827,13 +850,7 @@ class _HomePageState extends State<HomePage>
                         onPressed: _clearAllData, child: const Text('清空数据')),
                   ],
                 ),
-                Wrap(
-                  spacing: 4,
-                  children: _learnedNames()
-                      .map((e) =>
-                          Chip(label: Text(e), backgroundColor: Colors.greenAccent))
-                      .toList(),
-                ),
+                _buildLearnedChips(),
               ],
             ),
           ),
