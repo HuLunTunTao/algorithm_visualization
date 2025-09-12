@@ -1,4 +1,7 @@
+import '../algo/guide_learningway.dart';
 import '../struct/my_graph.dart';
+import '../struct/my_queue.dart';
+import 'KnowledgePoint.dart';
 
 class AlgorithmProblem {
   final String name;
@@ -12,7 +15,25 @@ class AlgorithmProblem {
     required this.description,
     this.tags = const [],
   });
+
+  // Map<String,dynamic> getLearnRecommend(MyGraph<KnowledgePoint> tree){
+  //   Map<String,dynamic> m={};
+  //   Map<String,MyQueue<MyGraphNode<KnowledgePoint>>?> pathMap={};
+  //   Map<String,int> difficultyMap={};
+  //   Map<String,int> studyTimeMap={};
+  //   Map<String,MyQueue<MyGraphNode<KnowledgePoint>>?> pathMap={};
+  //
+  //   for(final e in applicableKnowledgePoints.entries){
+  //
+  //     pathMap[e.key]=pathPlan(tree,e.key);
+  //     final pathList
+  //     int totalStudyTime
+  //
+  //   }
+  // }
 }
+
+
 
 List<AlgorithmProblem> algorithmProblems = [
   AlgorithmProblem(
