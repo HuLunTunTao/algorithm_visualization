@@ -431,33 +431,33 @@ class _HomePageState extends State<HomePage>
               Text('当前知识点: ${sel ?? '未选择'}'),
               if (sel != null) ...[
                 Text('学习次数: ${LearningStorage.getCount(sel)}'),
-                Row(
+                const SizedBox(height: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       style: _btnStyle,
                       onPressed: () async {
                         await LearningStorage.increment(sel);
                         setState(() {});
                         _toast('已增加学习次数');
                       },
-                      child: const Text('学习次数+1'),
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('学习次数+1'),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
                       style: _btnStyle,
                       onPressed: () async {
                         await LearningStorage.reset(sel);
                         setState(() {});
                         _toast('已清空学习次数');
                       },
-                      child: const Text('清空'),
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('清空'),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    ElevatedButton(
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
                       style: _btnStyle,
                       onPressed: () {
                         if (view == MainView.article) {
@@ -469,14 +469,10 @@ class _HomePageState extends State<HomePage>
                           });
                         }
                       },
-                      child: Text(view == MainView.article ? '返回图谱' : '查看文档'),
+                      icon: Icon(
+                          view == MainView.article ? Icons.arrow_back : Icons.menu_book_outlined),
+                      label: Text(view == MainView.article ? '返回图谱' : '查看文档'),
                     ),
-                    const SizedBox(width: 8),
-                    // ElevatedButton(
-                    //   style: _btnStyle,
-                    //   onPressed: () => _markLearned(sel),
-                    //   child: const Text('已学习'),
-                    // ),
                   ],
                 ),
               ],
