@@ -637,9 +637,18 @@ class _HomePageState extends State<HomePage>
                       if (value.text.isEmpty) {
                         return const Iterable<String>.empty();
                       }
-                      return algorithmProblems
-                          .map((e) => e.name)
-                          .where((name) => kmp(name, value.text) != -1);
+                      final query = value.text;
+                      final exactMatches = algorithmProblems
+                          .where((p) => kmp(p.name, query) != -1)
+                          .map((p) => p.name)
+                          .toList();
+                      final tagMatches = algorithmProblems
+                          .where((p) =>
+                          p.tags.any((tag) => kmp(tag, query) != -1))
+                          .map((p) => p.name)
+                          .where((name) => !exactMatches.contains(name))
+                          .toList();
+                      return [...exactMatches, ...tagMatches];
                     },
                     onSelected: (selection) {
                       problemCtrl.text = selection;
