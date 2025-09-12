@@ -85,57 +85,44 @@ class _HomePageState extends State<HomePage>
   void _onNodeTap(String id) {
     showDialog(
       context: context,
-      builder: (_) => Dialog(
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.purple.shade200, Colors.blue.shade200],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('选择知识点',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-                const SizedBox(height: 8),
-                Text('是否将"$id"设为当前知识点?',
-                    style: const TextStyle(color: Colors.white)),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(foregroundColor: Colors.white),
-                      child: const Text('取消'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          selected = id;
-                        });
-                        Navigator.pop(context);
-                      },
-                      style:
-                          TextButton.styleFrom(foregroundColor: Colors.white),
-                      child: const Text('确定'),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
+        title: const Text('选择知识点',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        content: SizedBox(
+          width: 260,
+          child: Text('是否将"$id"设为当前知识点?'),
         ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.lightBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.lightBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              setState(() {
+                selected = id;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('确定'),
+          ),
+        ],
       ),
     );
   }
@@ -244,6 +231,39 @@ class _HomePageState extends State<HomePage>
                 backgroundColor: Colors.green.shade100,
               ))
           .toList(),
+    );
+  }
+
+  /// Unified card with gradient header for side panels.
+  Widget _panelCard(String title, List<Color> colors, Widget child) {
+    return Card(
+      color: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: colors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Text(title,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: child,
+          ),
+        ],
+      ),
     );
   }
 
@@ -494,87 +514,61 @@ class _HomePageState extends State<HomePage>
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
-        child: Card(
-          color: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: _panelCard(
+          '学习面板',
+          [Colors.orange, Colors.pinkAccent],
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.orange, Colors.pinkAccent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                child: const Text('学习面板',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Text('当前知识点: ${sel ?? '未选择'}'),
+              if (sel != null) ...[
+                const SizedBox(height: 8),
+                Text('学习次数: ${LearningStorage.getCount(sel)}'),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    Text('当前知识点: ${sel ?? '未选择'}'),
-                    if (sel != null) ...[
-                      const SizedBox(height: 8),
-                      Text('学习次数: ${LearningStorage.getCount(sel)}'),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ElevatedButton.icon(
-                            style: _btnStyle,
-                            onPressed: () async {
-                              await LearningStorage.increment(sel);
-                              setState(() {});
-                              _toast('已增加学习次数');
-                            },
-                            icon: const Icon(Icons.add_circle_outline),
-                            label: const Text('学习次数+1'),
-                          ),
-                          ElevatedButton.icon(
-                            style: _btnStyle,
-                            onPressed: () async {
-                              await LearningStorage.reset(sel);
-                              setState(() {});
-                              _toast('已清空学习次数');
-                            },
-                            icon: const Icon(Icons.delete_outline),
-                            label: const Text('清空'),
-                          ),
-                          ElevatedButton.icon(
-                            style: _btnStyle,
-                            onPressed: () {
-                              if (view == MainView.article) {
-                                setState(() => view = MainView.graph);
-                              } else {
-                                setState(() {
-                                  articleName = sel;
-                                  view = MainView.article;
-                                });
-                              }
-                            },
-                            icon: Icon(view == MainView.article
-                                ? Icons.arrow_back
-                                : Icons.menu_book_outlined),
-                            label: Text(view == MainView.article
-                                ? '返回图谱'
-                                : '查看文档'),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ElevatedButton.icon(
+                      style: _btnStyle,
+                      onPressed: () async {
+                        await LearningStorage.increment(sel);
+                        setState(() {});
+                        _toast('已增加学习次数');
+                      },
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('学习次数+1'),
+                    ),
+                    ElevatedButton.icon(
+                      style: _btnStyle,
+                      onPressed: () async {
+                        await LearningStorage.reset(sel);
+                        setState(() {});
+                        _toast('已清空学习次数');
+                      },
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('清空'),
+                    ),
+                    ElevatedButton.icon(
+                      style: _btnStyle,
+                      onPressed: () {
+                        if (view == MainView.article) {
+                          setState(() => view = MainView.graph);
+                        } else {
+                          setState(() {
+                            articleName = sel;
+                            view = MainView.article;
+                          });
+                        }
+                      },
+                      icon: Icon(view == MainView.article
+                          ? Icons.arrow_back
+                          : Icons.menu_book_outlined),
+                      label: Text(view == MainView.article ? '返回图谱' : '查看文档'),
+                    ),
                   ],
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -596,120 +590,105 @@ class _HomePageState extends State<HomePage>
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('学习路径规划',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Autocomplete<String>(
-                      optionsBuilder: (value) {
-                        if (value.text.isEmpty) {
-                          return const Iterable<String>.empty();
-                        }
-                        // 优化为模糊搜索
-                        return FinalFuzzyMatcher.search(
-                                KnowledgePointRepository.getAllKnowledgePoints(),
-                                value.text)
-                            .map((e) => e.knowledgePoint.name);
-                      },
-                      onSelected: (selection) => targetCtrl.text = selection,
-                      fieldViewBuilder:
-                          (context, controller, focusNode, onEditingComplete) {
-                        controller.text = targetCtrl.text;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          onEditingComplete: onEditingComplete,
-                          decoration:
-                              const InputDecoration(labelText: '目标知识点'),
-                        );
-                      },
+            _panelCard(
+              '学习路径规划',
+              [Colors.blue, Colors.purpleAccent],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Autocomplete<String>(
+                    optionsBuilder: (value) {
+                      if (value.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      }
+                      return FinalFuzzyMatcher.search(
+                              KnowledgePointRepository.getAllKnowledgePoints(),
+                              value.text)
+                          .map((e) => e.knowledgePoint.name);
+                    },
+                    onSelected: (selection) => targetCtrl.text = selection,
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      controller.text = targetCtrl.text;
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: const InputDecoration(labelText: '目标知识点'),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    style: _btnStyle,
+                    onPressed: _planPath,
+                    child: const Text('规划路径'),
+                  ),
+                  if (pathResult.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      children: pathResult
+                          .map((e) => Chip(
+                                label: Text(e),
+                                backgroundColor: Colors.lightBlueAccent,
+                              ))
+                          .toList(),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
                       style: _btnStyle,
-                      onPressed: _planPath,
-                      child: const Text('规划路径'),
+                      onPressed: _updateQueue,
+                      child: const Text('更新学习路径'),
                     ),
-                    if (pathResult.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        children: pathResult
-                            .map((e) => Chip(
-                                  label: Text(e),
-                                  backgroundColor: Colors.lightBlueAccent,
-                                ))
-                            .toList(),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        style: _btnStyle,
-                        onPressed: _updateQueue,
-                        child: const Text('更新学习路径'),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
             const SizedBox(height: 8),
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('当前学习路径',
-                            style:
-                                TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        TextButton(onPressed: _clearQueue, child: const Text('清空')),
-                      ],
-                    ),
-                    if (queueList.isEmpty)
-                      const Text('暂无规划'),
-                    for (int i = 0; i < queueList.length; i++)
-                      Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        color: Colors.orange.shade50,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.deepPurple,
-                            child: Text('${i + 1}',
-                                style: const TextStyle(color: Colors.white)),
-                          ),
-                          title: Text(queueList[i]),
-                          trailing: Wrap(
-                            spacing: 4,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.play_arrow, color: Colors.blue),
-                                onPressed: () => _selectFromPath(queueList[i]),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.check, color: Colors.green),
-                                onPressed: () => _markLearned(queueList[i]),
-                              ),
-                            ],
-                          ),
+            _panelCard(
+              '当前学习路径',
+              [Colors.deepPurple, Colors.indigo],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('列表'),
+                      TextButton(onPressed: _clearQueue, child: const Text('清空')),
+                    ],
+                  ),
+                  if (queueList.isEmpty)
+                    const Text('暂无规划'),
+                  for (int i = 0; i < queueList.length; i++)
+                    Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      color: Colors.orange.shade50,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.deepPurple,
+                          child: Text('${i + 1}',
+                              style: const TextStyle(color: Colors.white)),
+                        ),
+                        title: Text(queueList[i]),
+                        trailing: Wrap(
+                          spacing: 4,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.play_arrow, color: Colors.blue),
+                              onPressed: () => _selectFromPath(queueList[i]),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.check, color: Colors.green),
+                              onPressed: () => _markLearned(queueList[i]),
+                            ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -731,89 +710,68 @@ class _HomePageState extends State<HomePage>
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('问题查询'),
-                    Autocomplete<String>(
-                      optionsBuilder: (value) {
-                        if (value.text.isEmpty) {
-                          return const Iterable<String>.empty();
-                        }
-                        final query = value.text;
-                        final exactMatches = algorithmProblems
-                            .where((p) => kmp(p.name, query) != -1)
-                            .map((p) => p.name)
-                            .toList();
-                        final tagMatches = algorithmProblems
-                            .where((p) =>
-                                p.tags.any((tag) => kmp(tag, query) != -1))
-                            .map((p) => p.name)
-                            .where((name) => !exactMatches.contains(name))
-                            .toList();
-                        return [...exactMatches, ...tagMatches];
-                      },
-                      onSelected: (selection) {
-                        problemCtrl.text = selection;
-                        _showProblem(selection);
-                      },
-                      fieldViewBuilder: (context, controller, focusNode,
-                          onEditingComplete) {
-                        controller.text = problemCtrl.text;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          onEditingComplete: onEditingComplete,
-                          decoration: const InputDecoration(labelText: '问题'),
-                        );
-                      },
-                    ),
-                  ],
-                ),
+            _panelCard(
+              '问题查询',
+              [Colors.teal, Colors.lightBlueAccent],
+              Autocomplete<String>(
+                optionsBuilder: (value) {
+                  if (value.text.isEmpty) {
+                    return const Iterable<String>.empty();
+                  }
+                  final query = value.text;
+                  final exactMatches = algorithmProblems
+                      .where((p) => kmp(p.name, query) != -1)
+                      .map((p) => p.name)
+                      .toList();
+                  final tagMatches = algorithmProblems
+                      .where((p) =>
+                          p.tags.any((tag) => kmp(tag, query) != -1))
+                      .map((p) => p.name)
+                      .where((name) => !exactMatches.contains(name))
+                      .toList();
+                  return [...exactMatches, ...tagMatches];
+                },
+                onSelected: (selection) {
+                  problemCtrl.text = selection;
+                  _showProblem(selection);
+                },
+                fieldViewBuilder:
+                    (context, controller, focusNode, onEditingComplete) {
+                  controller.text = problemCtrl.text;
+                  return TextField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    onEditingComplete: onEditingComplete,
+                    decoration: const InputDecoration(labelText: '问题'),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 8),
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: ListTile(
-                title: const Text('拓扑排序'),
+            _panelCard(
+              '拓扑排序',
+              [Colors.teal, Colors.lightBlueAccent],
+              ListTile(
+                title: const Text('查看拓扑图'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => setState(() => view = MainView.topo),
               ),
             ),
             const SizedBox(height: 8),
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('已学习知识点'),
-                        TextButton(
-                            onPressed: _clearAllData,
-                            child: const Text('清空数据')),
-                      ],
-                    ),
-                    _buildLearnedChips(),
-                  ],
-                ),
+            _panelCard(
+              '已学习知识点',
+              [Colors.green, Colors.teal],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                        onPressed: _clearAllData,
+                        child: const Text('清空数据')),
+                  ),
+                  _buildLearnedChips(),
+                ],
               ),
             ),
           ],
@@ -833,26 +791,19 @@ class _HomePageState extends State<HomePage>
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
-        child: Card(
-          color: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('已学习知识点'),
-                    TextButton(
-                        onPressed: _clearAllData, child: const Text('清空数据')),
-                  ],
-                ),
-                _buildLearnedChips(),
-              ],
-            ),
+        child: _panelCard(
+          '已学习知识点',
+          [Colors.deepPurple, Colors.indigo],
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                    onPressed: _clearAllData, child: const Text('清空数据')),
+              ),
+              _buildLearnedChips(),
+            ],
           ),
         ),
       ),
