@@ -34,22 +34,52 @@ class TopoView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("拓扑排序结果"),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.deepPurple, Colors.indigo],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: DataTable(
-          headingRowColor: MaterialStateProperty.all(Colors.blue.shade50),
-          columns: const [
-            DataColumn(label: Text("序号")),
-            DataColumn(label: Text("知识点")),
-          ],
-          rows: List.generate(order.length, (index) {
-            final node = order[index];
-            return DataRow(cells: [
-              DataCell(Text("${index + 1}")),
-              DataCell(Text(node.value.name)),
-            ]);
-          }),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Card(
+            margin: const EdgeInsets.all(16),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: DataTable(
+              headingRowColor: MaterialStateProperty.all(Colors.indigo.shade100),
+              columns: const [
+                DataColumn(label: Text("序号")),
+                DataColumn(label: Text("知识点")),
+              ],
+              rows: List.generate(order.length, (index) {
+                final node = order[index];
+                return DataRow(
+                  color: MaterialStateProperty.all(
+                    index.isEven ? Colors.white : Colors.indigo.shade50,
+                  ),
+                  cells: [
+                    DataCell(Text("${index + 1}")),
+                    DataCell(Text(node.value.name)),
+                  ],
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );
