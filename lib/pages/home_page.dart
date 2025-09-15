@@ -406,7 +406,6 @@ class _HomePageState extends State<HomePage>
                 layoutType: LayoutType.fruchterman,
                 orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
                 canvasMinSize: const Size(1000, 1000),
-                defaultNodeSize: const Size(160, 80),
                 onNodeTap: _onProblemNodeTap,
               ),
               Positioned(
@@ -495,7 +494,6 @@ class _HomePageState extends State<HomePage>
             layoutType: LayoutType.fruchterman,
             orientation: BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
             canvasMinSize: const Size(5000, 5000),
-            defaultNodeSize: const Size(160, 80),
             onNodeTap: _onNodeTap,
           ),
         );

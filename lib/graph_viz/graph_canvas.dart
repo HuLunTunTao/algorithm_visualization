@@ -14,7 +14,8 @@ class GraphCanvas extends StatefulWidget {
     this.layoutType = LayoutType.fruchterman,
     this.orientation = BuchheimWalkerConfiguration.ORIENTATION_LEFT_RIGHT,
     this.canvasMinSize = Size.zero,
-    this.defaultNodeSize = const Size(160, 80),
+    // 最小节点尺寸：设为 0 以便根据文字自适应
+    this.defaultNodeSize = Size.zero,
     this.edgeColor = const Color(0xFF5F6368),
     this.edgeWidth = 1.5,
     this.arrowColor = const Color(0xFF5F6368),
@@ -144,6 +145,7 @@ class _GraphCanvasState extends State<GraphCanvas> {
                     if (widget.onNodeTap != null) {
                       child = GestureDetector(onTap: () => widget.onNodeTap!(id), child: child);
                     }
+                    // 使用极小的最小尺寸，让节点随文字自然收缩/扩展
                     return ConstrainedBox(
                       constraints: BoxConstraints(
                         minWidth: widget.defaultNodeSize.width,
