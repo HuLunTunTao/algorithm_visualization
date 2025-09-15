@@ -328,46 +328,34 @@ class _HomePageState extends State<HomePage>
     final recs =
         ProblemPathRecommender.recommendLearningPaths(prob.name, learned);
 
-    final table = recs.isEmpty
+    final list = recs.isEmpty
         ? const Center(child: Text('暂无推荐路径'))
-        : DataTable(
-            headingRowColor: MaterialStateProperty.all(Colors.blueAccent),
-            headingTextStyle: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
-            dataRowColor: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
-                return Colors.lightGreenAccent.withOpacity(0.3);
-              }
-              return Colors.blue.shade50;
-            }),
-            columns: const [
-              DataColumn(label: Text('方案')),
-              DataColumn(label: Text('学习路径')),
-              DataColumn(label: Text('步骤')),
-              DataColumn(label: Text('总难度')),
-              DataColumn(label: Text('学习时间')),
-              DataColumn(label: Text('相似度')),
-              DataColumn(label: Text('综合评分')),
-            ],
-            rows: List.generate(recs.length, (i) {
+        : ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: recs.length,
+            separatorBuilder: (_, __) => const Divider(),
+            itemBuilder: (context, i) {
               final r = recs[i];
               final kp = r['solution_knowledge'] as KnowledgePoint;
               final path = (r['path'] as List<KnowledgePoint>)
                   .map((e) => e.name)
                   .join(' → ');
-              return DataRow(
-                selected: i == 0,
-                cells: [
-                  DataCell(Text(kp.name)),
-                  DataCell(Text(path)),
-                  DataCell(Text('${r['steps_count']}')),
-                  DataCell(Text('${r['total_difficulty']}')),
-                  DataCell(Text('${r['total_study_time']}')),
-                  DataCell(Text('${r['similarity_score']}')),
-                  DataCell(Text(r['total_score'].toStringAsFixed(2))),
-                ],
+              return ListTile(
+                title: Text(kp.name),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('学习路径: $path'),
+                    Text('步骤: ${r['steps_count']}'),
+                    Text('总难度: ${r['total_difficulty']}'),
+                    Text('学习时间: ${r['total_study_time']}'),
+                    Text('相似度: ${r['similarity_score']}'),
+                    Text('综合评分: ${r['total_score'].toStringAsFixed(2)}'),
+                  ],
+                ),
               );
-            }),
+            },
           );
 
     return Column(
@@ -395,16 +383,16 @@ class _HomePageState extends State<HomePage>
             ],
           ),
         ),
-        Card(
-          margin: const EdgeInsets.all(16),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 4,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: table,
+          Card(
+            margin: const EdgeInsets.all(16),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: list,
+            ),
           ),
-        ),
       ],
     );
   }
