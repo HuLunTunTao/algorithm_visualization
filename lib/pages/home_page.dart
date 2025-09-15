@@ -311,6 +311,19 @@ class _HomePageState extends State<HomePage>
     _toast('已选择 $id');
   }
 
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.blueGrey),
+          const SizedBox(width: 4),
+          Text('$label: $value'),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProblemView() {
     if (problemName == null) {
       return const Center(child: Text('未选择问题'));
@@ -327,32 +340,59 @@ class _HomePageState extends State<HomePage>
     final learned = _learnedNames();
     final recs =
         ProblemPathRecommender.recommendLearningPaths(prob.name, learned);
+    recs.sort((a, b) =>
+        (b['total_score'] as num).compareTo(a['total_score'] as num));
 
     final list = recs.isEmpty
         ? const Center(child: Text('暂无推荐路径'))
-        : ListView.separated(
+        : ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: recs.length,
-            separatorBuilder: (_, __) => const Divider(),
             itemBuilder: (context, i) {
               final r = recs[i];
               final kp = r['solution_knowledge'] as KnowledgePoint;
               final path = (r['path'] as List<KnowledgePoint>)
                   .map((e) => e.name)
                   .join(' → ');
-              return ListTile(
-                title: Text(kp.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('学习路径: $path'),
-                    Text('步骤: ${r['steps_count']}'),
-                    Text('总难度: ${r['total_difficulty']}'),
-                    Text('学习时间: ${r['total_study_time']}'),
-                    Text('相似度: ${r['similarity_score']}'),
-                    Text('综合评分: ${r['total_score'].toStringAsFixed(2)}'),
-                  ],
+              return Card(
+                margin:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Colors.indigo,
+                            child: Text('${i + 1}',
+                                style: const TextStyle(color: Colors.white)),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(kp.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _infoRow(Icons.route, '学习路径', path),
+                      _infoRow(
+                          Icons.looks_one, '步骤', r['steps_count'].toString()),
+                      _infoRow(Icons.assessment, '总难度',
+                          r['total_difficulty'].toString()),
+                      _infoRow(Icons.timer, '学习时间',
+                          r['total_study_time'].toString()),
+                      _infoRow(Icons.link, '相似度',
+                          r['similarity_score'].toString()),
+                      _infoRow(Icons.star, '综合评分',
+                          r['total_score'].toStringAsFixed(2)),
+                    ],
+                  ),
                 ),
               );
             },
@@ -383,16 +423,32 @@ class _HomePageState extends State<HomePage>
             ],
           ),
         ),
-          Card(
-            margin: const EdgeInsets.all(16),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: list,
-            ),
+        Card(
+          margin: const EdgeInsets.all(16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 4,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  color: Colors.indigo,
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: const Text('推荐学习路径',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: list,
+              ),
+            ],
           ),
+        ),
       ],
     );
   }
