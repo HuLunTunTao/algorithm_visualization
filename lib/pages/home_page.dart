@@ -274,6 +274,33 @@ class _HomePageState extends State<HomePage>
     });
   }
 
+  void _showAllProblems() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('全部问题'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: algorithmProblems.length,
+            itemBuilder: (context, index) {
+              final name = algorithmProblems[index].name;
+              return ListTile(
+                title: Text(name),
+                onTap: () {
+                  Navigator.pop(context);
+                  problemCtrl.text = name;
+                  _showProblem(name);
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _onProblemNodeTap(String id) {
     if (id == problemName) return;
     setState(() {
@@ -713,38 +740,48 @@ class _HomePageState extends State<HomePage>
             _panelCard(
               '问题查询',
               [Colors.teal, Colors.lightBlueAccent],
-              Autocomplete<String>(
-                optionsBuilder: (value) {
-                  if (value.text.isEmpty) {
-                    return const Iterable<String>.empty();
-                  }
-                  final query = value.text;
-                  final exactMatches = algorithmProblems
-                      .where((p) => kmp(p.name, query) != -1)
-                      .map((p) => p.name)
-                      .toList();
-                  final tagMatches = algorithmProblems
-                      .where((p) =>
-                          p.tags.any((tag) => kmp(tag, query) != -1))
-                      .map((p) => p.name)
-                      .where((name) => !exactMatches.contains(name))
-                      .toList();
-                  return [...exactMatches, ...tagMatches];
-                },
-                onSelected: (selection) {
-                  problemCtrl.text = selection;
-                  _showProblem(selection);
-                },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onEditingComplete) {
-                  controller.text = problemCtrl.text;
-                  return TextField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    onEditingComplete: onEditingComplete,
-                    decoration: const InputDecoration(labelText: '问题'),
-                  );
-                },
+              Column(
+                children: [
+                  Autocomplete<String>(
+                    optionsBuilder: (value) {
+                      if (value.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      }
+                      final query = value.text;
+                      final exactMatches = algorithmProblems
+                          .where((p) => kmp(p.name, query) != -1)
+                          .map((p) => p.name)
+                          .toList();
+                      final tagMatches = algorithmProblems
+                          .where((p) =>
+                              p.tags.any((tag) => kmp(tag, query) != -1))
+                          .map((p) => p.name)
+                          .where((name) => !exactMatches.contains(name))
+                          .toList();
+                      return [...exactMatches, ...tagMatches];
+                    },
+                    onSelected: (selection) {
+                      problemCtrl.text = selection;
+                      _showProblem(selection);
+                    },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                      controller.text = problemCtrl.text;
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: const InputDecoration(labelText: '问题'),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    title: const Text('查看全部问题'),
+                    trailing: const Icon(Icons.list),
+                    onTap: _showAllProblems,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 8),
