@@ -346,8 +346,6 @@ class _HomePageState extends State<HomePage>
     final list = recs.isEmpty
         ? const Center(child: Text('暂无推荐路径'))
         : ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
             itemCount: recs.length,
             itemBuilder: (context, i) {
               final r = recs[i];
@@ -428,25 +426,30 @@ class _HomePageState extends State<HomePage>
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(
-                  color: Colors.indigo,
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(16)),
+          child: SizedBox(
+            height: 240,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(
+                    color: Colors.indigo,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  child: const Text('推荐学习路径',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
-                child: const Text('推荐学习路径',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: list,
-              ),
-            ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: list,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
