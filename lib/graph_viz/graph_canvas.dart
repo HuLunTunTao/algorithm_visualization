@@ -71,6 +71,22 @@ class _GraphCanvasState extends State<GraphCanvas> {
   }
 
   @override
+  void didUpdateWidget(covariant GraphCanvas oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onChanged);
+      widget.controller.addListener(_onChanged);
+      _force = FruchtermanReingoldAlgorithm(
+        renderer: MidArrowEdgeRenderer(
+          controller: widget.controller,
+          arrowColor: widget.arrowColor,
+          linePaint: _edgePaint,
+        ),
+      );
+    }
+  }
+
+  @override
   void dispose() {
     widget.controller.removeListener(_onChanged);
     super.dispose();
@@ -139,11 +155,17 @@ class _GraphCanvasState extends State<GraphCanvas> {
                   paint: _edgePaint,
                   animated: false,
                   builder: (node) {
-                    final id = node.key!.value as String;
-                    final v = widget.controller.nodes[id]!;
+                    final key = node.key!.value as String;
+                    final v = widget.controller.nodeFromKey(key);
+                    if (v == null) {
+                      return const SizedBox.shrink();
+                    }
                     Widget child = v.build();
                     if (widget.onNodeTap != null) {
-                      child = GestureDetector(onTap: () => widget.onNodeTap!(id), child: child);
+                      child = GestureDetector(
+                        onTap: () => widget.onNodeTap!(v.id),
+                        child: child,
+                      );
                     }
                     // 使用极小的最小尺寸，让节点随文字自然收缩/扩展
                     return ConstrainedBox(
@@ -213,7 +235,7 @@ class MidArrowEdgeRenderer extends EdgeRenderer {
       VizEdge? vizEdge;
       try {
         vizEdge = controller.edges.firstWhere(
-              (ve) => ve.u == sourceId && ve.v == destId,
+              (ve) => ve.sourceKey == sourceId && ve.targetKey == destId,
         );
       } catch (e) {
         // 如果找不到，就默认它是有向的，或者直接跳过

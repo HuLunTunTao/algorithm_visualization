@@ -315,10 +315,16 @@ class _HomePageState extends State<HomePage>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 16, color: Colors.blueGrey),
           const SizedBox(width: 4),
-          Text('$label: $value'),
+          Expanded(
+            child: Text(
+              '$label: $value',
+              softWrap: true,
+            ),
+          ),
         ],
       ),
     );
@@ -605,6 +611,7 @@ class _HomePageState extends State<HomePage>
                       style: _btnStyle,
                       onPressed: () async {
                         await LearningStorage.increment(sel);
+                        _refreshNodeColors();
                         setState(() {});
                         _toast('已增加学习次数');
                       },
@@ -615,6 +622,7 @@ class _HomePageState extends State<HomePage>
                       style: _btnStyle,
                       onPressed: () async {
                         await LearningStorage.reset(sel);
+                        _refreshNodeColors();
                         setState(() {});
                         _toast('已清空学习次数');
                       },
