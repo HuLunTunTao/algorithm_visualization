@@ -6,14 +6,19 @@ import 'package:graphview/GraphView.dart';
 class VizNode {
   VizNode({
     required this.id,
+    required this.key,
     this.label = '',
     this.color = Colors.lightBlue,
     this.highlighted = false,
     this.highlightColor = Colors.orange,
     this.visitedOrder,
-  }) : gvNode = Node.Id(id);
+  }) : gvNode = Node.Id(key);
 
+  /// 对外暴露的节点标识（业务层使用的 ID）
   final String id;
+
+  /// 传递给 graphview 的唯一 key（避免多个控制器之间的冲突）
+  final String key;
   String label;
   Color color;
 
@@ -76,6 +81,8 @@ class VizEdge {
   VizEdge({
     required this.u,
     required this.v,
+    required this.sourceKey,
+    required this.targetKey,
     this.directed = false,
     this.color = Colors.black87,
     this.weight,
@@ -83,6 +90,8 @@ class VizEdge {
 
   final String u;
   final String v;
+  final String sourceKey;
+  final String targetKey;
   bool directed;
   Color color;
   num? weight;
@@ -90,13 +99,21 @@ class VizEdge {
 
 /// 控制器：持有 Graph、节点/边表，提供外部接口操作并通知刷新
 class GraphController extends ChangeNotifier {
-  GraphController() {
+  GraphController({String? namespace})
+      : _namespace = namespace ?? 'g${_nextNamespace++}' {
     _graph = Graph();
   }
+
+  static int _nextNamespace = 0;
 
   late Graph _graph;
   final Map<String, VizNode> _nodes = {};
   final List<VizEdge> _edges = [];
+  final Map<String, String> _keyToId = {};
+
+  final String _namespace;
+
+  String _gvKey(String id) => '$_namespace::$id';
 
   Graph get graph => _graph;
   Map<String, VizNode> get nodes => _nodes;
@@ -106,6 +123,7 @@ class GraphController extends ChangeNotifier {
     _graph = Graph();
     _nodes.clear();
     _edges.clear();
+    _keyToId.clear();
     notifyListeners();
   }
 
@@ -137,12 +155,15 @@ class GraphController extends ChangeNotifier {
         Color? color,
       }) {
     if (_nodes.containsKey(id)) return;
+    final key = _gvKey(id);
     final node = VizNode(
       id: id,
+      key: key,
       label: label ?? '',
       color: color ?? Colors.blue,
     );
     _nodes[id] = node;
+    _keyToId[key] = id;
     _graph.addNode(node.gvNode);
     notifyListeners();
   }
@@ -158,14 +179,19 @@ class GraphController extends ChangeNotifier {
     if (!hasNode(u)) addNode(u);
     if (!hasNode(v)) addNode(v);
 
+    final source = _nodes[u]!;
+    final target = _nodes[v]!;
+
     _edges.add(VizEdge(
       u: u,
       v: v,
+      sourceKey: source.key,
+      targetKey: target.key,
       directed: directed,
       color: color ?? Colors.black87,
       weight: weight,
     ));
-    final edge = Edge(_nodes[u]!.gvNode, _nodes[v]!.gvNode);
+    final edge = Edge(source.gvNode, target.gvNode);
     _graph.addEdgeS(edge);
     notifyListeners();
   }
@@ -210,5 +236,12 @@ class GraphController extends ChangeNotifier {
       if (clearVisitedOrder) n.visitedOrder = null;
     }
     notifyListeners();
+  }
+
+  /// 根据 graphview 的节点 key 反查业务层节点
+  VizNode? nodeFromKey(String key) {
+    final id = _keyToId[key];
+    if (id == null) return null;
+    return _nodes[id];
   }
 }
