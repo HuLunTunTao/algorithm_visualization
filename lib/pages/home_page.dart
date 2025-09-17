@@ -425,7 +425,7 @@ class _HomePageState extends State<HomePage>
                       // _infoRow(Icons.link, '相似度',
                       //     r['similarity_score'].toString()),
                       _infoRow(Icons.star, '综合评分',
-                          r['total_score'].toStringAsFixed(2)),
+                          (r['total_score']<0?0:r['total_score']).toStringAsFixed(2)),
                     ],
                   ),
                 ),
