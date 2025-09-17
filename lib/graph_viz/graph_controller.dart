@@ -112,6 +112,20 @@ class GraphController extends ChangeNotifier {
   final Map<String, String> _keyToId = {};
 
   final String _namespace;
+  int _version = 0;
+  int _structureVersion = 0;
+
+  String get namespace => _namespace;
+  int get version => _version;
+  int get structureVersion => _structureVersion;
+
+  void _markDirty({bool structural = false}) {
+    _version++;
+    if (structural) {
+      _structureVersion++;
+    }
+    notifyListeners();
+  }
 
   String _gvKey(String id) => '$_namespace::$id';
 
@@ -124,7 +138,7 @@ class GraphController extends ChangeNotifier {
     _nodes.clear();
     _edges.clear();
     _keyToId.clear();
-    notifyListeners();
+    _markDirty(structural: true);
   }
 
   /// 初始化：批量添加
@@ -143,7 +157,6 @@ class GraphController extends ChangeNotifier {
         addEdge(e.u, e.v, directed: e.directed, color: e.color, weight: e.weight);
       }
     }
-    notifyListeners();
   }
 
   bool hasNode(String id) => _nodes.containsKey(id);
@@ -165,7 +178,7 @@ class GraphController extends ChangeNotifier {
     _nodes[id] = node;
     _keyToId[key] = id;
     _graph.addNode(node.gvNode);
-    notifyListeners();
+    _markDirty(structural: true);
   }
 
   /// 添加边（节点不存在则补齐）
@@ -193,7 +206,7 @@ class GraphController extends ChangeNotifier {
     ));
     final edge = Edge(source.gvNode, target.gvNode);
     _graph.addEdgeS(edge);
-    notifyListeners();
+    _markDirty(structural: true);
   }
 
   /// 高亮/取消高亮
@@ -202,7 +215,7 @@ class GraphController extends ChangeNotifier {
     if (n == null) return;
     n.highlighted = on;
     if (color != null) n.highlightColor = color;
-    notifyListeners();
+    _markDirty();
   }
 
   /// 设置标签
@@ -210,7 +223,7 @@ class GraphController extends ChangeNotifier {
     final n = _nodes[id];
     if (n == null) return;
     n.label = label;
-    notifyListeners();
+    _markDirty();
   }
 
   /// 设置颜色
@@ -218,7 +231,7 @@ class GraphController extends ChangeNotifier {
     final n = _nodes[id];
     if (n == null) return;
     n.color = color;
-    notifyListeners();
+    _markDirty();
   }
 
   /// 设置访问序（遍历次序）
@@ -226,7 +239,7 @@ class GraphController extends ChangeNotifier {
     final n = _nodes[id];
     if (n == null) return;
     n.visitedOrder = order;
-    notifyListeners();
+    _markDirty();
   }
 
   /// 清除所有高亮/访问序
@@ -235,7 +248,7 @@ class GraphController extends ChangeNotifier {
       n.highlighted = false;
       if (clearVisitedOrder) n.visitedOrder = null;
     }
-    notifyListeners();
+    _markDirty();
   }
 
   /// 根据 graphview 的节点 key 反查业务层节点
