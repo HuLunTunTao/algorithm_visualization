@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart' hide Node;
+import 'package:hive/hive.dart';
 
 import '../algo/mohu_final.dart';
 import '../graph_viz/graph_canvas.dart';
@@ -41,6 +42,7 @@ class _HomePageState extends State<HomePage>
   String? articleName;
   String? problemName;
   late final TabController _tabController;
+  late final ValueListenable<Box<int>> _learningListenable;
 
   final ButtonStyle _btnStyle = ElevatedButton.styleFrom(
     backgroundColor: Colors.orange,
@@ -53,6 +55,9 @@ class _HomePageState extends State<HomePage>
     super.initState();
     tree = buildKnowledgeTree();
     _buildGraph();
+    _learningListenable = LearningStorage.watchCounts();
+    _learningListenable.addListener(_refreshNodeColors);
+    _refreshNodeColors();
     queue = LearningStorage.getPathQueue();
     _tabController = TabController(length: 4, vsync: this);
     Article.initArticleClass(KnowledgePointRepository.getAllKnowledgePoints())
@@ -61,6 +66,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void dispose() {
+    _learningListenable.removeListener(_refreshNodeColors);
     _tabController.dispose();
     super.dispose();
   }
@@ -311,7 +317,8 @@ class _HomePageState extends State<HomePage>
     _toast('已选择 $id');
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(IconData icon, String label, String value,
+      {bool wrapValue = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -320,10 +327,33 @@ class _HomePageState extends State<HomePage>
           Icon(icon, size: 16, color: Colors.blueGrey),
           const SizedBox(width: 4),
           Expanded(
-            child: Text(
-              '$label: $value',
-              softWrap: true,
-            ),
+            child: wrapValue
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label,
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(
+                        value,
+                        softWrap: true,
+                        style: const TextStyle(height: 1.3),
+                      ),
+                    ],
+                  )
+                : Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '$label: ',
+                          style:
+                              const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        TextSpan(text: value),
+                      ],
+                    ),
+                    softWrap: true,
+                  ),
           ),
         ],
       ),
@@ -384,7 +414,7 @@ class _HomePageState extends State<HomePage>
                         ],
                       ),
                       const SizedBox(height: 8),
-                      _infoRow(Icons.route, '学习路径', path),
+                      _infoRow(Icons.route, '学习路径', path, wrapValue: true),
                       _infoRow(
                           Icons.looks_one, '步骤', r['steps_count'].toString()),
                       _infoRow(Icons.assessment, '总难度',

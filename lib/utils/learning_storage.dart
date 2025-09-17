@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../struct/my_queue.dart';
@@ -66,5 +67,9 @@ class LearningStorage {
     final list = List<String>.from(pathBox.get('path', defaultValue: const []) ?? const []);
     list.removeWhere((e) => e == name);
     await savePath(list);
+  }
+
+  static ValueListenable<Box<int>> watchCounts() {
+    return box.listenable();
   }
 }
