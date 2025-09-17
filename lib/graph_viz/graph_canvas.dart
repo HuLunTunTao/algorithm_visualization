@@ -125,6 +125,9 @@ class _GraphCanvasState extends State<GraphCanvas> {
     }
 
     final algo = _pickAlgorithm();
+    final graphKey = ValueKey(
+      '${widget.controller.namespace}-${widget.controller.structureVersion}',
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -150,6 +153,7 @@ class _GraphCanvasState extends State<GraphCanvas> {
               child: Align(
                 alignment: Alignment.topLeft,
                 child: GraphView(
+                  key: graphKey,
                   graph: widget.controller.graph,
                   algorithm: algo,
                   paint: _edgePaint,
